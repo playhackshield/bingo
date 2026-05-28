@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HackShield Bingo - Leerling</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🔒 HackShield Bingo</h1>
+      <button id="logout" class="btn-secondary">Uitloggen</button>
+    </header>
+
+    <!-- Inlogscherm -->
+    <div id="joinScreen">
+      <div class="card">
+        <h2>Doe mee met Bingo</h2>
+        <input type="text" id="playerName" placeholder="Jouw naam" required>
+        <input type="text" id="sessionCodeInput" placeholder="Sessiecode (4 cijfers)" maxlength="4" required>
+        <button id="joinBtn" class="btn-primary">Deelnemen</button>
+        <div id="joinError" class="error"></div>
+      </div>
+    </div>
+
+    <!-- Bingo scherm -->
+    <div id="gameScreen" style="display:none;">
+      <div class="game-header">
+        <span>Sessie: <strong id="sessionCodeDisplay"></strong></span>
+        <span>Speler: <strong id="playerNameDisplay"></strong></span>
+        <span>✅ Goede antwoorden: <span id="correctCount">0</span> / 3</span>
+        <button id="bingoBtn" class="btn-bingo">🏆 BINGO!</button>
+      </div>
+
+      <!-- Bingokaart -->
+      <div id="bingoCard" class="bingo-grid"></div>
+
+      <!-- Vraag gedeelte (wordt zichtbaar als er een vraag is) -->
+      <div id="studentQuestionArea" style="display:none;">
+        <div class="question-box">
+          <h3 id="studentQuestionText"></h3>
+          <div id="studentOptions" class="options"></div>
+          <button id="submitAnswerBtn" class="btn-primary">Antwoord verzenden</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/student.js"></script>
+</body>
+</html>

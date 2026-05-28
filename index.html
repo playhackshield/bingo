@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HackShield Bingo</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+  <div class="container">
+    <h1>🔒 HackShield Bingo</h1>
+    <div class="choice-buttons">
+      <button id="teacherBtn" class="btn-primary">👩‍🏫 Leraar</button>
+      <button id="studentBtn" class="btn-primary">🧑‍🎓 Leerling</button>
+    </div>
+  </div>
+  <script>
+    document.getElementById('teacherBtn').onclick = () => location.href = 'teacher.html';
+    document.getElementById('studentBtn').onclick = () => location.href = 'student.html';
+  </script>
+</body>
+</html>

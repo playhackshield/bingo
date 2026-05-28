@@ -1,0 +1,135 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #1e3c72, #2a5298);
+  color: #333;
+  padding: 20px;
+}
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.card {
+  background: white;
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+}
+.btn-primary, .btn-secondary, .btn-bingo {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 30px;
+  font-weight: bold;
+  cursor: pointer;
+  margin: 5px;
+}
+.btn-primary { background: #4caf50; color: white; }
+.btn-secondary { background: #f44336; color: white; }
+.btn-bingo { background: #ff9800; color: white; font-size: 1.2em; }
+.wheel-container {
+  text-align: center;
+  margin: 20px;
+}
+.wheel {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  border: 5px solid #fff;
+  background: conic-gradient(from 0deg, #ff9999, #99ff99, #9999ff, #ffff99, #ff99ff, #99ffff, #ff9999);
+  margin: 0 auto;
+  transition: transform 4s cubic-bezier(0.33, 1, 0.68, 1);
+}
+.wheel.spinning {
+  transform: rotate(1440deg);
+}
+.options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 15px 0;
+}
+.option {
+  background: #f0f0f0;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  flex: 1 1 200px;
+  text-align: center;
+}
+.option.selected {
+  background: #4caf50;
+  color: white;
+}
+.bingo-grid {
+  display: grid;
+  gap: 10px;
+  justify-content: center;
+  margin: 20px auto;
+}
+.grid-3 { grid-template-columns: repeat(3, 100px); }
+.grid-4 { grid-template-columns: repeat(4, 100px); }
+.grid-5 { grid-template-columns: repeat(5, 100px); }
+.bingo-cell {
+  width: 100px;
+  height: 100px;
+  background: white;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+.bingo-cell.streaked {
+  opacity: 0.4;
+  background: #ddd;
+  text-decoration: line-through;
+}
+.bingo-cell.streaked::after {
+  content: "✓";
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  font-size: 1.2rem;
+  color: green;
+}
+.bingo-cell:hover {
+  transform: scale(1.02);
+}
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  padding: 10px 20px;
+  border-radius: 15px;
+  margin-bottom: 20px;
+}
+.players-panel, .claims-panel {
+  background: white;
+  border-radius: 15px;
+  padding: 15px;
+  margin-top: 20px;
+}
+ul {
+  list-style: none;
+  max-height: 200px;
+  overflow-y: auto;
+}
+li {
+  padding: 5px;
+  border-bottom: 1px solid #eee;
+}
+.error {
+  color: red;
+  margin-top: 10px;
+}

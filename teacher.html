@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HackShield Bingo - Leraar</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🎲 HackShield Bingo – Leraar</h1>
+      <button id="logout" class="btn-secondary">Uitloggen</button>
+    </header>
+
+    <!-- Sessie aanmaken -->
+    <div id="setupScreen" class="setup-screen">
+      <div class="card">
+        <h2>Nieuwe Bingosessie</h2>
+        <label>Aantal vakjes op de kaart:</label>
+        <select id="gridSize">
+          <option value="9">3x3 (9 vakjes)</option>
+          <option value="16" selected>4x4 (16 vakjes)</option>
+          <option value="25">5x5 (25 vakjes)</option>
+        </select>
+        <button id="createSessionBtn" class="btn-primary">Sessie starten</button>
+      </div>
+    </div>
+
+    <!-- Actieve sessie -->
+    <div id="activeSession" style="display:none;">
+      <div class="session-info">
+        <span>Code: <strong id="sessionCode"></strong></span>
+        <span>Spelers: <span id="playerCount">0</span></span>
+        <button id="forceNextRound" class="btn-secondary">⏩ Forceer volgende ronde</button>
+      </div>
+
+      <!-- Wielanimatie -->
+      <div class="wheel-container">
+        <div id="wheel" class="wheel"></div>
+        <button id="spinBtn" class="btn-primary">🎡 Draai aan het wiel!</button>
+      </div>
+
+      <!-- Huidig onderwerp & vraag -->
+      <div id="questionArea" style="display:none;">
+        <h2 id="currentSubject"></h2>
+        <div id="questionText"></div>
+        <div id="options" class="options"></div>
+        <button id="revealAnswerBtn" class="btn-primary">Volgende ➡️</button>
+        <div id="feedback"></div>
+      </div>
+
+      <!-- Lijst van spelers en claims -->
+      <div class="players-panel">
+        <h3>Deelnemers</h3>
+        <ul id="playersList"></ul>
+      </div>
+      <div class="claims-panel">
+        <h3>🏆 Bingo claims</h3>
+        <ul id="claimsList"></ul>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/teacher.js"></script>
+</body>
+</html>
