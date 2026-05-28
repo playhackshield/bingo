@@ -1,0 +1,183 @@
+[
+  {
+    "id": 1,
+    "thema": "Dopamine",
+    "iconen": ["🧠", "⚡", "😊"],
+    "vraag": "Wat gebeurt er in je hersenen als je iets leuk vindt op een scherm, zoals een spel of grappige video?",
+    "opties": [
+      "Je hersenen maken een stofje aan dat je blij maakt (dopamine)",
+      "Je hersenen stoppen even met werken",
+      "Je vergeet alles wat je geleerd hebt"
+    ],
+    "correct": 0
+  },
+  {
+    "id": 2,
+    "thema": "Pauzes",
+    "iconen": ["⏸️", "🔋", "🕒"],
+    "vraag": "Waarom is het belangrijk om ook pauzes te nemen van schermen, zelfs als je iets heel leuk vindt?",
+    "opties": [
+      "Omdat je anders het spel te snel uitspeelt",
+      "Omdat je ogen, hersenen en lichaam ook rust nodig hebben",
+      "Omdat apparaten dan sneller opladen"
+    ],
+    "correct": 1
+  },
+  {
+    "id": 3,
+    "thema": "Sociaal Plezier",
+    "iconen": ["👥", "🎮", "📱"],
+    "vraag": "Wat is een voorbeeld van plezier met digitale media dat ook sociaal is?",
+    "opties": [
+      "Een game spelen met vrienden online",
+      "TikTok-video's maken zonder ze te delen",
+      "Een boek lezen op een e-reader"
+    ],
+    "correct": 0
+  },
+  {
+    "id": 4,
+    "thema": "Betrouwbaarheid",
+    "iconen": ["🔍", "✅", "📰"],
+    "vraag": "Hoe weet je of een bericht op sociale media betrouwbaar is?",
+    "opties": [
+      "Als het veel gedeeld is en van een bekende influencer komt",
+      "Als het afkomstig is van een betrouwbare bron en je het kunt controleren bij andere bronnen",
+      "Als het grappig of spannend klinkt"
+    ],
+    "correct": 1
+  },
+  {
+    "id": 5,
+    "thema": "Meerdere bronnen",
+    "iconen": ["🔎", "📚", "⚖️"],
+    "vraag": "Waarom is het verstandig om meerdere bronnen te gebruiken bij het zoeken naar informatie?",
+    "opties": [
+      "Omdat je dan sneller klaar bent met zoeken",
+      "Omdat je dan kunt vergelijken en beter kunt beoordelen of iets klopt",
+      "Omdat je dan meer websites leert kennen"
+    ],
+    "correct": 1
+  },
+  {
+    "id": 6,
+    "thema": "Influencer",
+    "iconen": ["📢", "💸", "🎥"],
+    "vraag": "Wat betekent het als een influencer een gesponsorde post plaatst?",
+    "opties": [
+      "Dat ze hun eigen mening geven zonder invloed van anderen",
+      "Dat ze betaald worden om een product of dienst aan te prijzen, wat invloed kan hebben op hun mening",
+      "Dat ze reclame maken omdat ze het product gratis kregen"
+    ],
+    "correct": 1
+  },
+  {
+    "id": 7,
+    "thema": "Hack TikTok",
+    "iconen": ["🖥️", "⚠️", "🔒"],
+    "vraag": "Je ziet een filmpje op TikTok waarin iemand zegt dat je laptop gehackt wordt als je een bepaalde toetscombinatie indrukt. Wat doe je?",
+    "opties": [
+      "Je probeert het meteen uit om te zien of het klopt",
+      "Je stuurt het door naar je vrienden: 'Check dit!'",
+      "Je zoekt op meerdere betrouwbare websites of het waar is"
+    ],
+    "correct": 2
+  },
+  {
+    "id": 8,
+    "thema": "App-toestemming",
+    "iconen": ["📸", "📍", "🎙️"],
+    "vraag": "Veel apps vragen toegang tot je foto's, locatie of microfoon. Wat is een slimme manier om daarmee om te gaan?",
+    "opties": [
+      "Toestaan, anders werkt de app misschien niet goed",
+      "Alleen toestaan als je snapt waarom de app het nodig heeft én je het zelf oké vindt",
+      "Altijd weigeren, want ze kunnen je bespioneren"
+    ],
+    "correct": 1
+  },
+  {
+    "id": 9,
+    "thema": "Sterk wachtwoord",
+    "iconen": ["🔐", "🔑", "💪"],
+    "vraag": "Wat is een sterk wachtwoord?",
+    "opties": [
+      "1234",
+      "Je voornaam",
+      "Een mix van letters, cijfers en tekens",
+      "Het woord 'wachtwoord'"
+    ],
+    "correct": 2
+  },
+  {
+    "id": 10,
+    "thema": "Schermtijd afspraken",
+    "iconen": ["⏰", "🍽️", "👪"],
+    "vraag": "Je bent net begonnen aan je favoriete game als je ouder zegt dat het tijd is om samen te eten. Wat doe je?",
+    "opties": [
+      "Pauzeer of stop het spel en leg later uit waarom dat moeilijk was",
+      "Zeg dat je niet kunt stoppen, want je zit midden in een level",
+      "Eet met één hand en speel stiekem verder met de andere"
+    ],
+    "correct": 0
+  },
+  {
+    "id": 11,
+    "thema": "Samen kijken",
+    "iconen": ["👨‍👩‍👧", "📺", "💬"],
+    "vraag": "Je kijkt samen met je ouder een filmpje op YouTube. Jij vindt het grappig, maar je ouder kijkt bezorgd. Wat kun je het beste doen?",
+    "opties": [
+      "Snel een ander filmpje opzetten zodat het ongemakkelijke moment voorbij is",
+      "Vragen wat je ouder ervan vindt en uitleggen waarom jij het leuk vindt",
+      "Zwijgen, want anders mag je straks helemaal geen filmpjes meer kijken"
+    ],
+    "correct": 1
+  },
+  {
+    "id": 12,
+    "thema": "Groepsapp",
+    "iconen": ["📱", "👥", "🚫"],
+    "vraag": "In een groepsapp wordt een foto gedeeld van iemand uit de klas met een flauwe opmerking erbij. De groep lacht. Wat doe jij?",
+    "opties": [
+      "Meedoen, want het is maar een grapje",
+      "Privé zeggen tegen degene dat het niet oké is",
+      "Niets sturen én het bespreken met een ouder of leerkracht"
+    ],
+    "correct": 2
+  },
+  {
+    "id": 13,
+    "thema": "Digitale detox",
+    "iconen": ["🌿", "📵", "🧘"],
+    "vraag": "Wat is een digitale detox?",
+    "opties": [
+      "Een app die je helpt met leren",
+      "Een periode waarin je bewust minder of geen media gebruikt",
+      "Een soort virus op je telefoon"
+    ],
+    "correct": 1
+  },
+  {
+    "id": 14,
+    "thema": "Schermtijd instellen",
+    "iconen": ["⏲️", "📊", "⚙️"],
+    "vraag": "Wat betekent het als je schermtijd instelt op je telefoon of tablet?",
+    "opties": [
+      "Je bepaalt hoeveel tijd je op een dag mag slapen",
+      "Je stelt in hoeveel tijd je per dag op een scherm mag zitten",
+      "Je meet hoe lang je batterij meegaat"
+    ],
+    "correct": 1
+  },
+  {
+    "id": 15,
+    "thema": "Balans",
+    "iconen": ["⚖️", "😴", "🎨"],
+    "vraag": "Hoe kun je herkennen dat je schermtijd uit balans is?",
+    "opties": [
+      "Je hebt geen interesse in sociale media",
+      "Je gebruikt je scherm alleen voor schoolwerk",
+      "Je voelt je vaak moe en hebt minder tijd voor andere activiteiten"
+    ],
+    "correct": 2
+  }
+]
