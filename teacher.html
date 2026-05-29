@@ -11,10 +11,7 @@
 <body>
   <div class="container">
     <header>
-      <div class="header-left">
-        <h1>🎲 HackShield Bingo – Leraar</h1>
-        <div id="questionCounter" class="question-counter"></div>
-      </div>
+      <h1 id="pageTitle">HackShield Bingo</h1>
       <div class="header-buttons">
         <button id="prevQuestionBtn" class="btn-secondary">◀ Vorige</button>
         <button id="nextQuestionBtn" class="btn-primary">Volgende ▶</button>
@@ -38,15 +35,11 @@
 
     <!-- Actieve sessie -->
     <div id="activeSession" style="display:none;">
-      <div class="session-info">
-        <span>Code: <strong id="sessionCode"></strong></span>
-        <span>Spelers: <span id="playerCount">0</span></span>
-        <button id="spinBtn" class="btn-primary">🎡 Draai aan het wiel!</button>
-      </div>
-
-      <!-- Wielanimatie -->
+      <!-- Wiel (klikbaar) -->
       <div class="wheel-container">
-        <div id="wheel" class="wheel"></div>
+        <div id="wheel" class="wheel">
+          <i class="fas fa-cog wheel-icon-default"></i>
+        </div>
       </div>
 
       <!-- Vraag gedeelte -->
@@ -59,15 +52,15 @@
 
       <!-- Geschiedenis van getrokken iconen -->
       <div class="history-panel">
-        <h3><i class="fas fa-history"></i> Getrokken iconen</h3>
+        <h3>Geschiedenis</h3>
         <div id="historyList" class="history-list">
           <div class="empty-history">Nog geen iconen getrokken</div>
         </div>
       </div>
-      
+
       <!-- Lijst van spelers en claims -->
       <div class="players-panel">
-        <h3>Deelnemers</h3>
+        <h3 id="playersTitle">Deelnemers (0)</h3>
         <ul id="playersList"></ul>
       </div>
       <div class="claims-panel">
