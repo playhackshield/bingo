@@ -10,6 +10,15 @@
 </head>
   
 <body>
+<script>
+  // DEBUG: Controleer Firebase status voordat iets anders laadt
+  console.log("=== SESSIONS PAGE DEBUG ===");
+  console.log("1. Pagina geladen, tijd:", new Date().toLocaleTimeString());
+  
+  // Check of firebase al beschikbaar is
+  console.log("2. Firebase object beschikbaar?", typeof firebase !== 'undefined');
+</script>
+  
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
