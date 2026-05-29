@@ -46,31 +46,58 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function createNewSession() {
   const gridSize = parseInt(document.getElementById('newGridSize').value);
-  const code = generateSessionCode();
   
-  const sessionData = {
-    code: code,
-    gridSize: gridSize,
-    active: true,
-    teacherId: currentTeacherId,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-    currentSpin: null,
-    currentQuestion: null,
-    currentIcon: null,
-    currentAnswerRevealed: false,
-    correctAnswer: null
-  };
+  // Bereken benodigd aantal thema's (gridSize = totaal aantal vakjes)
+  // Bij 4x4 is gridSize 16, maar we hebben √16 = 4 nodig voor de dimensie
+  // Het aantal benodigde unieke thema's is gelijk aan gridSize (aantal vakjes)
+  const requiredThemes = gridSize;
+  
+  // Toon loading state
+  const createBtn = document.getElementById('createSessionBtn');
+  const originalText = createBtn.innerHTML;
+  createBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Controleren...';
+  createBtn.disabled = true;
   
   try {
+    // Controleer aantal beschikbare thema's
+    const availableThemes = await getAvailableThemesCount();
+    
+    if (availableThemes < requiredThemes) {
+      alert(`❌ Niet genoeg thema's!\n\nJe hebt ${requiredThemes} thema's nodig voor een ${Math.sqrt(gridSize)}x${Math.sqrt(gridSize)} grid (${gridSize} vakjes).\n\nEr zijn momenteel slechts ${availableThemes} thema's beschikbaar.\n\nVoeg eerst meer thema's toe aan vragen.json of kies een kleiner grid.`);
+      createBtn.innerHTML = originalText;
+      createBtn.disabled = false;
+      return;
+    }
+    
+    // Genereer code en maak sessie aan
+    const code = generateSessionCode();
+    
+    const sessionData = {
+      code: code,
+      gridSize: gridSize,
+      active: true,
+      teacherId: currentTeacherId,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      currentSpin: null,
+      currentQuestion: null,
+      currentIcon: null,
+      currentAnswerRevealed: false,
+      correctAnswer: null,
+      questionsHistory: []
+    };
+    
     const docRef = await bingoSessions.add(sessionData);
     console.log("Sessie aangemaakt:", docRef.id, "Code:", code);
     
-    alert(`✅ Sessie aangemaakt!\nCode: ${code}\nKlik OK om naar de leraarpagina te gaan.`);
+    alert(`✅ Sessie aangemaakt!\nCode: ${code}\n${availableThemes} thema's beschikbaar voor ${requiredThemes} vakjes.\nKlik OK om naar de leraarpagina te gaan.`);
+    
     window.location.href = `teacher.html?sessionId=${docRef.id}`;
     
   } catch (error) {
     console.error("Fout bij aanmaken sessie:", error);
     alert("Fout: " + error.message);
+    createBtn.innerHTML = originalText;
+    createBtn.disabled = false;
   }
 }
 
@@ -244,5 +271,19 @@ async function deleteSession(sessionId) {
   } catch (error) {
     console.error("Fout bij verwijderen sessie:", error);
     alert("Fout: " + error.message);
+  }
+}
+
+
+// Telt het aantal unieke thema's in vragen.json
+async function getAvailableThemesCount() {
+  try {
+    const res = await fetch('data/vragen.json');
+    const allQuestions = await res.json();
+    // Elk object in de array is een uniek thema
+    return allQuestions.length;
+  } catch (error) {
+    console.error("Fout bij laden vragen.json:", error);
+    return 0;
   }
 }
