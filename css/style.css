@@ -299,3 +299,40 @@ li {
   border-radius: 20px;
   font-weight: bold;
 }
+/* Vraag card styling */
+.question-card {
+  background: rgba(255,255,255,0.15);
+  border-radius: 15px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.question-text {
+  font-size: 1.2rem;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.feedback {
+  margin-top: 15px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.bingo-card-container {
+  background: rgba(255,255,255,0.1);
+  border-radius: 15px;
+  padding: 20px;
+}
+
+.bingo-card-container h3 {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.hint {
+  text-align: center;
+  font-size: 0.8rem;
+  opacity: 0.7;
+  margin-top: 15px;
+}
