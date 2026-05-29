@@ -189,3 +189,104 @@ li {
     font-size: 1.5rem;
   }
 }
+
+/* Sessiebeheer stijlen */
+.sessions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.session-card {
+  background: rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+  transition: all 0.2s;
+}
+
+.session-card:hover {
+  background: rgba(255,255,255,0.2);
+  transform: translateX(5px);
+}
+
+.session-card.ended {
+  opacity: 0.8;
+}
+
+.session-code {
+  font-size: 1.2rem;
+  margin-bottom: 8px;
+}
+
+.session-details {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.session-details span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.session-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-danger {
+  background: #dc2626;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btn-danger:hover {
+  background: #b91c1c;
+}
+
+.loading, .empty-state, .error {
+  text-align: center;
+  padding: 30px;
+  color: rgba(255,255,255,0.7);
+}
+
+.empty-state i {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.header-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+.form-group select {
+  padding: 10px 15px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(255,255,255,0.9);
+  font-size: 1rem;
+}
