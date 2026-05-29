@@ -34,23 +34,33 @@ async function joinSession() {
   currentSession = { id: sessionDoc.id, ...sessionDoc.data() };
   gridSize = currentSession.gridSize;
 
-  // Genereer willekeurige bingokaart (iconen uit vragen.json)
-  const allIcons = [];
-  allQuestions.forEach(q => {
-    q.iconen.forEach(icon => {
-      allIcons.push({ icon, thema: q.thema });
-    });
-  });
+  // Genereer willekeurige bingokaart met EXACT gridSize * gridSize vakjes
   const totalCells = gridSize * gridSize;
   const card = [];
+  
+  // Verzamel alle beschikbare iconen uit de vragenlijst
+  let allAvailableIcons = [];
+  allQuestions.forEach(q => {
+    q.iconen.forEach(icon => {
+      allAvailableIcons.push({ icon, thema: q.thema });
+    });
+  });
+  
+  console.log(`Aantal beschikbare iconen: ${allAvailableIcons.length}`);
+  console.log(`Aantal benodigde vakjes: ${totalCells}`);
+  
+  // Vul de kaart met willekeurige iconen (met teruglegging)
   for (let i = 0; i < totalCells; i++) {
-    const randomItem = allIcons[Math.floor(Math.random() * allIcons.length)];
+    const randomItem = allAvailableIcons[Math.floor(Math.random() * allAvailableIcons.length)];
     card.push({
       icon: randomItem.icon,
       thema: randomItem.thema,
       streaked: false
     });
   }
+  
+  console.log(`Gegenereerde kaart met ${card.length} vakjes`);
+    
   // Sla speler op in Firestore
   const playerData = {
     sessionId: currentSession.id,
