@@ -144,15 +144,12 @@ async function spinWheel() {
   const wheel = document.getElementById('wheel');
   if (!wheel) return;
   
-  // Toon aftel animatie
-  wheel.innerHTML = '<div class="wheel-countdown">3</div>';
+  // Toon groot vraagteken met aftel animatie
+  wheel.innerHTML = '<div class="wheel-countdown">?</div>';
   wheel.classList.add('spinning');
   
-  // Aftel animatie
-  for (let i = 3; i >= 1; i--) {
-    await new Promise(resolve => setTimeout(resolve, 800));
-    wheel.innerHTML = `<div class="wheel-countdown">${i}</div>`;
-  }
+  // Wacht 2 seconden (simuleert draaien)
+  await new Promise(resolve => setTimeout(resolve, 2000));
   
   try {
     // Laad alle beschikbare iconen
