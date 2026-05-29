@@ -137,6 +137,82 @@ async function loadPlayers() {
   });
 }
 
+// Functie om geschiedenis weer te geven
+function updateHistoryDisplay() {
+  const historyContainer = document.getElementById('historyList');
+  if (!historyContainer) return;
+  
+  if (!questionsHistory || questionsHistory.length === 0) {
+    historyContainer.innerHTML = '<div class="empty-history">Nog geen iconen getrokken</div>';
+    return;
+  }
+  
+  historyContainer.innerHTML = '';
+  
+  // Toon alle iconen in volgorde (meest recente onderaan of bovenaan? Laten we meest recente bovenaan doen)
+  const reversedHistory = [...questionsHistory].reverse();
+  
+  reversedHistory.forEach((item, idx) => {
+    const historyItem = document.createElement('div');
+    historyItem.className = 'history-item';
+    historyItem.innerHTML = `
+      <div class="history-icon">${item.icon}</div>
+      <div class="history-info">
+        <div class="history-thema">${item.thema}</div>
+        <div class="history-number">#${questionsHistory.length - idx}</div>
+      </div>
+    `;
+    historyItem.onclick = () => {
+      // Optioneel: bij klikken naar die vraag gaan
+      if (confirm(`Ga naar vraag ${questionsHistory.length - idx}: ${item.thema}?`)) {
+        jumpToQuestion(questionsHistory.length - idx - 1);
+      }
+    };
+    historyContainer.appendChild(historyItem);
+  });
+}
+
+// Functie om naar een specifieke vraag te springen
+async function jumpToQuestion(index) {
+  if (index < 0 || index >= questionsHistory.length) return;
+  
+  const targetQuestion = questionsHistory[index];
+  if (!targetQuestion) return;
+  
+  currentQuestionIndex = index + 1;
+  currentIcon = targetQuestion.icon;
+  currentThema = targetQuestion.thema;
+  currentQuestion = {
+    vraag: targetQuestion.vraag,
+    opties: targetQuestion.opties,
+    correct: targetQuestion.correct
+  };
+  
+  await bingoSessions.doc(currentSessionId).update({
+    currentSpin: {
+      icon: currentIcon,
+      thema: currentThema,
+      vraag: currentQuestion.vraag,
+      opties: currentQuestion.opties,
+      correct: currentQuestion.correct
+    },
+    currentAnswerRevealed: false,
+    correctAnswer: null
+  });
+  
+  const wheel = document.getElementById('wheel');
+  if (wheel) wheel.innerHTML = `<div class="wheel-icon" style="font-size: 6rem;">${currentIcon}</div>`;
+  
+  updateQuestionCounter();
+  updateHistoryDisplay();
+  showCurrentQuestion({
+    icon: currentIcon,
+    thema: currentThema,
+    vraag: currentQuestion.vraag,
+    opties: currentQuestion.opties
+  });
+}
+
 async function loadClaims() {
   bingoClaims.where('sessionId', '==', currentSessionId).orderBy('timestamp', 'desc').onSnapshot(snapshot => {
     const list = document.getElementById('claimsList');
