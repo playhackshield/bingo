@@ -25,7 +25,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('prevQuestionBtn').onclick = previousQuestion;
   document.getElementById('nextQuestionBtn').onclick = nextQuestion;
   document.getElementById('endSessionBtn').onclick = endSession;
-  document.getElementById('logout').onclick = () => auth.signOut().then(() => location.reload());
 });
 
 async function createSession() {
