@@ -1,125 +1,32 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Firebase Login Test</title>
-    <style>
-        body { font-family: Arial; background: #f0f0f0; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); width: 350px; text-align: center; }
-        input { width: 100%; padding: 10px; margin: 8px 0; box-sizing: border-box; }
-        button { width: 100%; padding: 10px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px; }
-        .error { color: red; font-size: 14px; margin-top: 10px; }
-        .info { background: #e3f2fd; padding: 10px; border-radius: 5px; margin-top: 20px; text-align: left; }
-        .status { font-weight: bold; margin: 10px 0; }
-    </style>
+    <title>Sessies - Test</title>
 </head>
 <body>
-    <div class="container">
-        <h2>Firebase Login Test</h2>
-        
-        <div id="loginForm">
-            <input type="email" id="email" placeholder="Email" autocomplete="email">
-            <input type="password" id="password" placeholder="Wachtwoord" autocomplete="current-password">
-            <button onclick="doLogin()">Inloggen</button>
-            <div id="error" class="error"></div>
-        </div>
+    <h1>Sessies Pagina</h1>
+    <div id="status">Controleren...</div>
+    <button onclick="logout()">Uitloggen</button>
 
-        <div id="userInfo" style="display: none;">
-            <div class="status" id="statusText"></div>
-            <div class="info">
-                <strong>Ingelogd als:</strong> <span id="userEmail"></span><br>
-                <strong>User ID:</strong> <span id="userId"></span><br>
-                <strong>Email verified:</strong> <span id="emailVerified"></span>
-            </div>
-            <button onclick="doLogout()">Uitloggen</button>
-        </div>
-    </div>
-
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
-    
-    <!-- Jouw Firebase config (gebruikt dezelfde als in je app) -->
     <script src="js/firebase-config.js"></script>
     
     <script>
-        // Wacht tot Firebase geïnitialiseerd is
-        function waitForAuth() {
-            return new Promise((resolve) => {
-                if (typeof firebase !== 'undefined' && firebase.auth) {
-                    resolve(firebase.auth());
-                } else {
-                    const interval = setInterval(() => {
-                        if (typeof firebase !== 'undefined' && firebase.auth) {
-                            clearInterval(interval);
-                            resolve(firebase.auth());
-                        }
-                    }, 100);
-                }
-            });
-        }
-
-        let currentAuth = null;
-
-        async function init() {
-            currentAuth = await waitForAuth();
-            console.log("Auth object:", currentAuth);
-            
-            // Controleer of er al een gebruiker is ingelogd
-            currentAuth.onAuthStateChanged((user) => {
-                updateUI(user);
-            });
-        }
-
-        function updateUI(user) {
-            const loginDiv = document.getElementById('loginForm');
-            const userDiv = document.getElementById('userInfo');
-            const statusText = document.getElementById('statusText');
-            
+        firebase.auth().onAuthStateChanged(user => {
+            const statusDiv = document.getElementById('status');
             if (user) {
-                loginDiv.style.display = 'none';
-                userDiv.style.display = 'block';
-                document.getElementById('userEmail').textContent = user.email;
-                document.getElementById('userId').textContent = user.uid;
-                document.getElementById('emailVerified').textContent = user.emailVerified ? 'Ja' : 'Nee';
-                statusText.innerHTML = '✅ Je bent ingelogd!';
-                console.log("Ingelogde gebruiker:", user.email);
+                statusDiv.innerHTML = `✅ Ingelogd als: ${user.email}<br>User ID: ${user.uid}`;
             } else {
-                loginDiv.style.display = 'block';
-                userDiv.style.display = 'none';
-                console.log("Niet ingelogd");
+                statusDiv.innerHTML = '❌ Niet ingelogd! <a href="index.html">Ga naar login</a>';
             }
+        });
+        
+        function logout() {
+            firebase.auth().signOut().then(() => {
+                window.location.href = 'index.html';
+            });
         }
-
-        async function doLogin() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const errorDiv = document.getElementById('error');
-            
-            if (!email || !password) {
-                errorDiv.textContent = 'Vul email en wachtwoord in.';
-                return;
-            }
-            
-            try {
-                const userCredential = await currentAuth.signInWithEmailAndPassword(email, password);
-                console.log("Inloggen gelukt:", userCredential.user.email);
-                errorDiv.textContent = '';
-            } catch (error) {
-                console.error("Inlogfout:", error);
-                errorDiv.textContent = error.message;
-            }
-        }
-
-        async function doLogout() {
-            try {
-                await currentAuth.signOut();
-                console.log("Uitgelogd");
-            } catch (error) {
-                console.error("Uitlogfout:", error);
-            }
-        }
-
-        init();
     </script>
 </body>
 </html>
