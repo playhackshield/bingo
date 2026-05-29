@@ -9,13 +9,25 @@ let jokers = 0;
 
 document.addEventListener('DOMContentLoaded', async () => {
   await anonymousLogin();
-  const res = await fetch('data/vragen.json');
-  allQuestions = await res.json();
   
-  document.getElementById('joinBtn').onclick = joinSession;
-  document.getElementById('submitAnswerBtn').onclick = submitAnswer;
-  document.getElementById('bingoBtn').onclick = claimBingo;
-  document.getElementById('logout').onclick = () => auth.signOut().then(() => location.reload());
+  try {
+    const res = await fetch('data/vragen.json');
+    allQuestions = await res.json();
+    console.log("Vragen geladen:", allQuestions.length);
+  } catch (error) {
+    console.error("Fout bij laden vragen:", error);
+  }
+  
+  // Event listeners - met null checks
+  const joinBtn = document.getElementById('joinBtn');
+  const bingoBtn = document.getElementById('bingoBtn');
+  const logoutBtn = document.getElementById('logout');
+  const submitAnswerBtn = document.getElementById('submitAnswerBtn');
+  
+  if (joinBtn) joinBtn.onclick = joinSession;
+  if (bingoBtn) bingoBtn.onclick = claimBingo;
+  if (logoutBtn) logoutBtn.onclick = () => auth.signOut().then(() => location.reload());
+  if (submitAnswerBtn) submitAnswerBtn.onclick = submitAnswer;
 });
 
 async function joinSession() {
@@ -23,139 +35,179 @@ async function joinSession() {
   const code = document.getElementById('sessionCodeInput').value.trim();
   
   if (!name || !code) {
-    document.getElementById('joinError').innerText = 'Vul naam en code in.';
+    const errorDiv = document.getElementById('joinError');
+    if (errorDiv) errorDiv.innerText = 'Vul naam en code in.';
     return;
   }
   
-  const snapshot = await bingoSessions.where('code', '==', code).where('active', '==', true).limit(1).get();
-  if (snapshot.empty) {
-    document.getElementById('joinError').innerText = 'Geen actieve sessie met deze code.';
-    return;
-  }
-  
-  const sessionDoc = snapshot.docs[0];
-  currentSession = { id: sessionDoc.id, ...sessionDoc.data() };
-  
-  // Bereken grid dimensie
-  const totalVakjes = currentSession.gridSize;
-  const dimension = Math.sqrt(totalVakjes);
-  gridSize = dimension;
-  console.log(`Grid: ${gridSize}x${gridSize}`);
-
-  // Genereer bingokaart
-  const totalCells = gridSize * gridSize;
-  let allIcons = [];
-  allQuestions.forEach(q => {
-    q.iconen.forEach(icon => {
-      allIcons.push({ icon, thema: q.thema });
-    });
-  });
-  
-  const card = [];
-  for (let i = 0; i < totalCells; i++) {
-    const randomItem = allIcons[Math.floor(Math.random() * allIcons.length)];
-    card.push({
-      icon: randomItem.icon,
-      thema: randomItem.thema,
-      streaked: false
-    });
-  }
-
-  // Sla speler op
-  const playerData = {
-    sessionId: currentSession.id,
-    name: name,
-    card: card,
-    correctCount: 0,
-    jokers: 0,
-    joinedAt: firebase.firestore.FieldValue.serverTimestamp()
-  };
-  const playerRef = await bingoPlayers.add(playerData);
-  currentPlayer = { id: playerRef.id, ...playerData };
-  jokers = 0;
-  correctStreak = 0;
-
-  // Toon spel scherm
-  document.getElementById('joinScreen').style.display = 'none';
-  document.getElementById('gameScreen').style.display = 'block';
-  document.getElementById('sessionCodeDisplay').innerText = code;
-  document.getElementById('playerNameDisplay').innerText = name;
-  updateJokerDisplay();
-  bingoCard = card;
-  renderBingoCard();
-
-  // 🔥 BELANGRIJK: Luister naar sessie updates (voor nieuwe vragen)
-  bingoSessions.doc(currentSession.id).onSnapshot((doc) => {
-    const data = doc.data();
-    console.log("Sessie update ontvangen:", data);
+  try {
+    const snapshot = await bingoSessions.where('code', '==', code).where('active', '==', true).limit(1).get();
+    if (snapshot.empty) {
+      const errorDiv = document.getElementById('joinError');
+      if (errorDiv) errorDiv.innerText = 'Geen actieve sessie met deze code.';
+      return;
+    }
     
-    if (data.currentSpin && data.currentSpin.icon) {
-      // Nieuwe vraag ontvangen!
-      currentSpin = data.currentSpin;
-      showStudentQuestion(data.currentSpin);
-    } else {
-      // Geen actieve vraag, verberg vraag gebied
-      document.getElementById('studentQuestionArea').style.display = 'none';
-    }
-  });
+    const sessionDoc = snapshot.docs[0];
+    currentSession = { id: sessionDoc.id, ...sessionDoc.data() };
+    
+    // Bereken grid dimensie
+    const totalVakjes = currentSession.gridSize;
+    const dimension = Math.sqrt(totalVakjes);
+    gridSize = dimension;
+    console.log(`Grid: ${gridSize}x${gridSize}`);
 
-  // Luister naar eigen player updates (voor jokers en kaart)
-  bingoPlayers.doc(currentPlayer.id).onSnapshot((doc) => {
-    if (doc.exists) {
-      const updated = doc.data();
-      currentPlayer.correctCount = updated.correctCount;
-      jokers = updated.jokers || 0;
-      updateJokerDisplay();
-      if (updated.card) {
-        bingoCard = updated.card;
-        renderBingoCard();
-      }
+    // Genereer bingokaart
+    const totalCells = gridSize * gridSize;
+    let allIcons = [];
+    if (allQuestions.length > 0) {
+      allQuestions.forEach(q => {
+        q.iconen.forEach(icon => {
+          allIcons.push({ icon, thema: q.thema });
+        });
+      });
+    } else {
+      // Fallback iconen als vragen niet laden
+      allIcons = [
+        { icon: "🔒", thema: "Veiligheid" },
+        { icon: "📧", thema: "Phishing" },
+        { icon: "🔐", thema: "Wachtwoord" }
+      ];
     }
-  });
+    
+    const card = [];
+    for (let i = 0; i < totalCells; i++) {
+      const randomItem = allIcons[Math.floor(Math.random() * allIcons.length)];
+      card.push({
+        icon: randomItem.icon,
+        thema: randomItem.thema,
+        streaked: false
+      });
+    }
+
+    // Sla speler op
+    const playerData = {
+      sessionId: currentSession.id,
+      name: name,
+      card: card,
+      correctCount: 0,
+      jokers: 0,
+      joinedAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    const playerRef = await bingoPlayers.add(playerData);
+    currentPlayer = { id: playerRef.id, ...playerData };
+    jokers = 0;
+    correctStreak = 0;
+
+    // Toon spel scherm
+    const joinScreen = document.getElementById('joinScreen');
+    const gameScreen = document.getElementById('gameScreen');
+    const sessionCodeDisplay = document.getElementById('sessionCodeDisplay');
+    const playerNameDisplay = document.getElementById('playerNameDisplay');
+    
+    if (joinScreen) joinScreen.style.display = 'none';
+    if (gameScreen) gameScreen.style.display = 'block';
+    if (sessionCodeDisplay) sessionCodeDisplay.innerText = code;
+    if (playerNameDisplay) playerNameDisplay.innerText = name;
+    
+    updateJokerDisplay();
+    bingoCard = card;
+    renderBingoCard();
+
+    // Luister naar sessie updates (voor nieuwe vragen)
+    bingoSessions.doc(currentSession.id).onSnapshot((doc) => {
+      const data = doc.data();
+      console.log("Sessie update ontvangen:", data);
+      
+      if (data && data.currentSpin && data.currentSpin.icon) {
+        currentSpin = data.currentSpin;
+        showStudentQuestion(data.currentSpin);
+      } else {
+        const questionArea = document.getElementById('studentQuestionArea');
+        if (questionArea) questionArea.style.display = 'none';
+      }
+    });
+
+    // Luister naar eigen player updates
+    bingoPlayers.doc(currentPlayer.id).onSnapshot((doc) => {
+      if (doc && doc.exists) {
+        const updated = doc.data();
+        if (updated) {
+          currentPlayer.correctCount = updated.correctCount;
+          jokers = updated.jokers || 0;
+          updateJokerDisplay();
+          if (updated.card) {
+            bingoCard = updated.card;
+            renderBingoCard();
+          }
+        }
+      }
+    });
+    
+  } catch (error) {
+    console.error("Fout bij joinen:", error);
+    const errorDiv = document.getElementById('joinError');
+    if (errorDiv) errorDiv.innerText = 'Fout bij deelnemen: ' + error.message;
+  }
 }
 
 function showStudentQuestion(spin) {
   console.log("Toon vraag voor student:", spin.thema);
   
-  document.getElementById('studentQuestionArea').style.display = 'block';
-  document.getElementById('studentQuestionText').innerHTML = `
+  const questionArea = document.getElementById('studentQuestionArea');
+  const questionText = document.getElementById('studentQuestionText');
+  const optionsDiv = document.getElementById('studentOptions');
+  const submitBtn = document.getElementById('submitAnswerBtn');
+  const feedbackDiv = document.getElementById('answerFeedback');
+  
+  if (!questionArea || !questionText || !optionsDiv) {
+    console.error("Vraag elementen niet gevonden!");
+    return;
+  }
+  
+  questionArea.style.display = 'block';
+  questionText.innerHTML = `
     <span style="font-size:2rem;">${spin.icon}</span><br>
     <strong>${spin.thema}</strong><br><br>
     ${spin.vraag}
   `;
   
-  const optionsDiv = document.getElementById('studentOptions');
   optionsDiv.innerHTML = '';
-  spin.opties.forEach((opt, idx) => {
-    const btn = document.createElement('div');
-    btn.classList.add('option');
-    btn.innerText = opt;
-    btn.dataset.idx = idx;
-    btn.onclick = () => {
-      document.querySelectorAll('#studentOptions .option').forEach(o => o.classList.remove('selected'));
-      btn.classList.add('selected');
-    };
-    optionsDiv.appendChild(btn);
-  });
+  if (spin.opties && Array.isArray(spin.opties)) {
+    spin.opties.forEach((opt, idx) => {
+      const btn = document.createElement('div');
+      btn.classList.add('option');
+      btn.innerText = opt;
+      btn.dataset.idx = idx;
+      btn.onclick = () => {
+        document.querySelectorAll('#studentOptions .option').forEach(o => o.classList.remove('selected'));
+        btn.classList.add('selected');
+      };
+      optionsDiv.appendChild(btn);
+    });
+  }
   
-  document.getElementById('submitAnswerBtn').disabled = false;
-  document.getElementById('answerFeedback').innerHTML = '';
+  if (submitBtn) submitBtn.disabled = false;
+  if (feedbackDiv) feedbackDiv.innerHTML = '';
 }
 
 async function submitAnswer() {
   if (!currentSpin) {
-    document.getElementById('answerFeedback').innerHTML = '<span style="color:#ffcdd2;">Er is geen actieve vraag.</span>';
+    const feedbackDiv = document.getElementById('answerFeedback');
+    if (feedbackDiv) feedbackDiv.innerHTML = '<span style="color:#ffcdd2;">Er is geen actieve vraag.</span>';
     return;
   }
   
   const selected = document.querySelector('#studentOptions .option.selected');
   if (!selected) {
-    document.getElementById('answerFeedback').innerHTML = '<span style="color:#ffcdd2;">Kies een antwoord.</span>';
+    const feedbackDiv = document.getElementById('answerFeedback');
+    if (feedbackDiv) feedbackDiv.innerHTML = '<span style="color:#ffcdd2;">Kies een antwoord.</span>';
     return;
   }
   
   const answerIndex = parseInt(selected.dataset.idx);
   const isCorrect = (answerIndex === currentSpin.correct);
+  const feedbackDiv = document.getElementById('answerFeedback');
   
   if (isCorrect) {
     correctStreak++;
@@ -164,24 +216,29 @@ async function submitAnswer() {
     if (correctStreak === 3) {
       newJokers++;
       correctStreak = 0;
-      document.getElementById('answerFeedback').innerHTML = '<span style="color:#a5d6a7;">🎉 Goed! Je hebt een JOKER verdiend!</span>';
+      if (feedbackDiv) feedbackDiv.innerHTML = '<span style="color:#a5d6a7;">🎉 Goed! Je hebt een JOKER verdiend!</span>';
     } else {
-      document.getElementById('answerFeedback').innerHTML = '<span style="color:#a5d6a7;">✅ Goed antwoord!</span>';
+      if (feedbackDiv) feedbackDiv.innerHTML = '<span style="color:#a5d6a7;">✅ Goed antwoord!</span>';
     }
     
     // Update jokers in Firebase
-    await bingoPlayers.doc(currentPlayer.id).update({
-      jokers: newJokers
-    });
-    jokers = newJokers;
-    updateJokerDisplay();
+    if (currentPlayer && currentPlayer.id) {
+      await bingoPlayers.doc(currentPlayer.id).update({
+        jokers: newJokers
+      });
+      jokers = newJokers;
+      updateJokerDisplay();
+    }
     
   } else {
     correctStreak = 0;
-    document.getElementById('answerFeedback').innerHTML = `<span style="color:#ffcdd2;">❌ Fout! Het juiste antwoord is: ${currentSpin.opties[currentSpin.correct]}</span>`;
+    if (feedbackDiv && currentSpin.opties) {
+      feedbackDiv.innerHTML = `<span style="color:#ffcdd2;">❌ Fout! Het juiste antwoord is: ${currentSpin.opties[currentSpin.correct]}</span>`;
+    }
   }
   
-  document.getElementById('submitAnswerBtn').disabled = true;
+  const submitBtn = document.getElementById('submitAnswerBtn');
+  if (submitBtn) submitBtn.disabled = true;
 }
 
 function updateJokerDisplay() {
@@ -201,15 +258,21 @@ function renderBingoCard() {
   container.style.gridTemplateColumns = `repeat(${gridSize}, minmax(80px, 100px))`;
   container.innerHTML = '';
   
+  if (!bingoCard || bingoCard.length === 0) return;
+  
   bingoCard.forEach((cell, idx) => {
     const div = document.createElement('div');
     div.className = `bingo-cell ${cell.streaked ? 'streaked' : ''}`;
     div.innerHTML = cell.icon;
     
     div.onclick = () => {
-      bingoCard[idx].streaked = !cell.streaked;
-      renderBingoCard();
-      bingoPlayers.doc(currentPlayer.id).update({ card: bingoCard }).catch(console.error);
+      if (bingoCard && bingoCard[idx]) {
+        bingoCard[idx].streaked = !cell.streaked;
+        renderBingoCard();
+        if (currentPlayer && currentPlayer.id) {
+          bingoPlayers.doc(currentPlayer.id).update({ card: bingoCard }).catch(console.error);
+        }
+      }
     };
     
     container.appendChild(div);
@@ -229,18 +292,27 @@ async function claimBingo() {
     return;
   }
   
-  await bingoClaims.add({
-    sessionId: currentSession.id,
-    playerId: currentPlayer.id,
-    name: currentPlayer.name,
-    jokersUsed: result.jokersUsed,
-    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-  });
-  
-  alert(`🎉 BINGO! Gefeliciteerd!\nGebruikte jokers: ${result.jokersUsed}`);
+  try {
+    await bingoClaims.add({
+      sessionId: currentSession.id,
+      playerId: currentPlayer.id,
+      name: currentPlayer.name,
+      jokersUsed: result.jokersUsed,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    
+    alert(`🎉 BINGO! Gefeliciteerd!\nGebruikte jokers: ${result.jokersUsed}`);
+  } catch (error) {
+    console.error("Fout bij claimen:", error);
+    alert("Fout bij claimen: " + error.message);
+  }
 }
 
 function checkBingoWithJokers() {
+  if (!bingoCard || bingoCard.length === 0 || gridSize === 0) {
+    return { isBingo: false, missingCount: 999, jokersUsed: 0 };
+  }
+  
   const size = gridSize;
   let grid = [];
   for (let i = 0; i < size; i++) {
