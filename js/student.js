@@ -24,7 +24,6 @@ async function joinSession() {
     document.getElementById('joinError').innerText = 'Vul naam en code in.';
     return;
   }
-  // Zoek sessie op code
   const snapshot = await bingoSessions.where('code', '==', code).where('active', '==', true).limit(1).get();
   if (snapshot.empty) {
     document.getElementById('joinError').innerText = 'Geen actieve sessie met deze code.';
@@ -33,35 +32,28 @@ async function joinSession() {
   const sessionDoc = snapshot.docs[0];
   currentSession = { id: sessionDoc.id, ...sessionDoc.data() };
   gridSize = currentSession.gridSize;
-
-  // Genereer willekeurige bingokaart met EXACT gridSize * gridSize vakjes
-  const totalCells = gridSize * gridSize;
-  const card = [];
+  console.log("Opgehaalde gridSize:", gridSize, "Type:", typeof gridSize);
   
-  // Verzamel alle beschikbare iconen uit de vragenlijst
-  let allAvailableIcons = [];
+  // --- Genereer exact het aantal benodigde vakjes ---
+  const totalCells = gridSize * gridSize;
+  // Verzamel alle beschikbare iconen
+  let allIcons = [];
   allQuestions.forEach(q => {
     q.iconen.forEach(icon => {
-      allAvailableIcons.push({ icon, thema: q.thema });
+      allIcons.push({ icon, thema: q.thema });
     });
   });
-  
-  console.log(`Aantal beschikbare iconen: ${allAvailableIcons.length}`);
-  console.log(`Aantal benodigde vakjes: ${totalCells}`);
-  
-  // Vul de kaart met willekeurige iconen (met teruglegging)
+  const card = [];
   for (let i = 0; i < totalCells; i++) {
-    const randomItem = allAvailableIcons[Math.floor(Math.random() * allAvailableIcons.length)];
+    const randomItem = allIcons[Math.floor(Math.random() * allIcons.length)];
     card.push({
       icon: randomItem.icon,
       thema: randomItem.thema,
       streaked: false
     });
   }
-  
-  console.log(`Gegenereerde kaart met ${card.length} vakjes`);
-    
-  // Sla speler op in Firestore
+  console.log(`Aantal gegenereerde vakjes: ${card.length}`); // Moet gelijk zijn aan totalCells
+
   const playerData = {
     sessionId: currentSession.id,
     name: name,
@@ -72,12 +64,14 @@ async function joinSession() {
   };
   const playerRef = await bingoPlayers.add(playerData);
   currentPlayer = { id: playerRef.id, ...playerData };
+
   document.getElementById('joinScreen').style.display = 'none';
   document.getElementById('gameScreen').style.display = 'block';
   document.getElementById('sessionCodeDisplay').innerText = code;
   document.getElementById('playerNameDisplay').innerText = name;
+  bingoCard = card;
   renderBingoCard();
-
+  
   // Luister naar sessie-updates (nieuwe spin)
   bingoSessions.doc(currentSession.id).onSnapshot(async (doc) => {
     const data = doc.data();
@@ -112,21 +106,28 @@ async function joinSession() {
 
 function renderBingoCard() {
   const container = document.getElementById('bingoCard');
-  container.className = `bingo-grid grid-${gridSize}`;
+  if (!container) return;
+
+  // Forceer een grid lay-out met het juiste aantal kolommen
+  container.style.display = 'grid';
+  container.style.gap = '10px';
+  container.style.justifyContent = 'center';
+  container.style.gridTemplateColumns = `repeat(${gridSize}, minmax(80px, 100px))`;
+  
   container.innerHTML = '';
+  console.log(`Rendering ${bingoCard.length} vakjes in een ${gridSize}x${gridSize} grid`);
+
   bingoCard.forEach((cell, idx) => {
     const div = document.createElement('div');
     div.className = `bingo-cell ${cell.streaked ? 'streaked' : ''}`;
     div.innerHTML = cell.icon;
     div.onclick = () => {
       if (currentSpin && !cell.streaked && currentSpin.icon === cell.icon) {
-        // Mag alleen strepen als het huidige gedraaide icoon overeenkomt
         streakCell(idx);
-      } else if (currentPlayer.bonusAvailable && !cell.streaked) {
-        // Bonus: mag elk vakje strepen
+      } else if (currentPlayer && currentPlayer.bonusAvailable && !cell.streaked) {
         streakCell(idx);
       } else {
-        alert('Je mag dit vakje nu niet wegstrepen. Alleen het gedraaide icoon of met bonus.');
+        alert('Je mag dit vakje nu niet wegstrepen.');
       }
     };
     container.appendChild(div);
