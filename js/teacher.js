@@ -3,6 +3,72 @@ let currentQuestion = null;
 let currentIcon = null;
 let currentThema = null;
 
+// Voeg toe aan het begin van teacher.js, na de variabele declaraties
+document.addEventListener('DOMContentLoaded', async () => {
+  await anonymousLogin();
+  
+  // Check of er een sessionId in de URL staat
+  const urlParams = new URLSearchParams(window.location.search);
+  const sessionIdFromUrl = urlParams.get('sessionId');
+  
+  if (sessionIdFromUrl) {
+    // Hervat bestaande sessie
+    currentSessionId = sessionIdFromUrl;
+    await loadExistingSession(sessionIdFromUrl);
+  } else {
+    // Normale flow: toon setup scherm
+    document.getElementById('setupScreen').style.display = 'block';
+    document.getElementById('activeSession').style.display = 'none';
+  }
+  
+  // Event listeners (zoals eerder)
+  document.getElementById('createSessionBtn').onclick = createSession;
+  // ... rest van event listeners ...
+});
+
+// Nieuwe functie om bestaande sessie te laden
+async function loadExistingSession(sessionId) {
+  try {
+    const sessionDoc = await bingoSessions.doc(sessionId).get();
+    if (!sessionDoc.exists) {
+      alert("Sessie niet gevonden");
+      window.location.href = 'sessions.html';
+      return;
+    }
+    
+    const sessionData = sessionDoc.data();
+    currentSessionId = sessionId;
+    
+    document.getElementById('setupScreen').style.display = 'none';
+    document.getElementById('activeSession').style.display = 'block';
+    document.getElementById('sessionCode').innerText = sessionData.code;
+    
+    // Laad spelers en claims
+    loadPlayers();
+    loadClaims();
+    
+    // Als er een actieve spin is, toon de vraag
+    if (sessionData.currentSpin && sessionData.currentSpin.icon) {
+      showCurrentQuestion(sessionData.currentSpin);
+    }
+    
+    // Luister naar veranderingen
+    bingoSessions.doc(currentSessionId).onSnapshot((doc) => {
+      if (doc.exists) {
+        const data = doc.data();
+        if (data.currentSpin && data.currentSpin.icon) {
+          showCurrentQuestion(data.currentSpin);
+        }
+      }
+    });
+    
+  } catch (error) {
+    console.error("Fout bij laden sessie:", error);
+    alert("Kon sessie niet laden: " + error.message);
+    window.location.href = 'sessions.html';
+  }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   await anonymousLogin();
   
