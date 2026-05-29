@@ -53,7 +53,7 @@
             auth.signInWithEmailAndPassword(email, password)
                 .then((userCredential) => {
                     console.log("Ingelogd:", userCredential.user.email);
-                    window.location.href = 'sessions.html';
+                    window.location.href = 'test.html';
                 })
                 .catch(error => {
                     document.getElementById('error').textContent = error.message;
