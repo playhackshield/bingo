@@ -529,7 +529,6 @@ header {
   border-color: #4caf50;
 }
 
-
 /* Geschiedenis panel */
 .history-panel {
   background: rgba(255,255,255,0.1);
@@ -552,6 +551,18 @@ header {
   gap: 12px;
   align-items: center;
   padding: 10px 5px;
+  min-height: 80px;
+  max-height: none;
+  overflow-y: visible;
+}
+
+/* Scrollbar alleen horizontaal indien nodig, verticaal nooit scrollen */
+@media (max-width: 768px) {
+  .history-list {
+    max-height: none;
+    overflow-x: auto;
+    overflow-y: visible;
+  }
 }
 
 .history-item {
@@ -566,6 +577,12 @@ header {
   cursor: pointer;
   transition: all 0.2s;
   min-width: 70px;
+  flex-shrink: 0;
+}
+
+.history-item:hover {
+  background: rgba(255,255,255,0.3);
+  transform: translateY(-3px);
 }
 
 .history-icon {
@@ -578,25 +595,6 @@ header {
   font-weight: bold;
 }
 
-/* Scrollbar styling voor history */
-.history-list::-webkit-scrollbar {
-  height: 6px;
-}
-
-.history-list::-webkit-scrollbar-track {
-  background: rgba(255,255,255,0.1);
-  border-radius: 3px;
-}
-
-.history-list::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.3);
-  border-radius: 3px;
-}
-
-.history-list::-webkit-scrollbar-thumb:hover {
-  background: rgba(255,255,255,0.5);
-}
-
 .empty-history {
   color: rgba(255,255,255,0.5);
   text-align: center;
@@ -605,29 +603,16 @@ header {
   width: 100%;
 }
 
-.history-item:hover {
-  background: rgba(255,255,255,0.3);
-  transform: translateY(-3px);
-}
-
-/* Responsive */
+/* Horizontale scroll alleen op mobiel */
 @media (max-width: 768px) {
   .history-list {
-    max-height: 100px;
-    gap: 8px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 10px;
   }
   
   .history-item {
-    padding: 6px 10px;
-    min-width: 55px;
-  }
-  
-  .history-icon {
-    font-size: 1.8rem;
-  }
-  
-  .history-number {
-    font-size: 0.6rem;
+    flex-shrink: 0;
   }
 }
 
