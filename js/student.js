@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.error("Fout bij laden vragen:", error);
   }
   
-  // Event listeners - met null checks
+  // Event listeners
   const joinBtn = document.getElementById('joinBtn');
   const bingoBtn = document.getElementById('bingoBtn');
   const logoutBtn = document.getElementById('logout');
@@ -26,9 +26,98 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   if (joinBtn) joinBtn.onclick = joinSession;
   if (bingoBtn) bingoBtn.onclick = claimBingo;
-  if (logoutBtn) logoutBtn.onclick = () => auth.signOut().then(() => location.reload());
   if (submitAnswerBtn) submitAnswerBtn.onclick = submitAnswer;
+  
+  if (logoutBtn) {
+    logoutBtn.onclick = () => {
+      clearLocalStorage();
+      auth.signOut().then(() => location.reload());
+    };
+  }
+  
+  // 🔥 Probeer bestaande sessie te hervatten
+  const resumed = await tryResumeSession();
+  if (!resumed) {
+    // Geen bestaande sessie, toon join scherm
+    document.getElementById('joinScreen').style.display = 'block';
+    document.getElementById('gameScreen').style.display = 'none';
+  }
 });
+
+// Auto-hervat functie
+async function tryResumeSession() {
+  const savedStudentId = localStorage.getItem('hackshield_studentId');
+  const savedSessionId = localStorage.getItem('hackshield_sessionId');
+  
+  if (!savedStudentId || !savedSessionId) return false;
+  
+  try {
+    // Haal student data op
+    const studentDoc = await bingoPlayers.doc(savedStudentId).get();
+    if (!studentDoc.exists) return false;
+    
+    const studentData = studentDoc.data();
+    
+    // Controleer of de sessie nog actief is
+    const sessionDoc = await bingoSessions.doc(savedSessionId).get();
+    if (!sessionDoc.exists || !sessionDoc.data().active) return false;
+    
+    // Herstel data
+    currentSession = { id: savedSessionId, ...sessionDoc.data() };
+    currentPlayer = { id: savedStudentId, ...studentData };
+    bingoCard = studentData.card || [];
+    jokers = studentData.jokers || 0;
+    correctStreak = 0;
+    
+    // Herstel gridSize
+    const totalVakjes = currentSession.gridSize;
+    const dimension = Math.sqrt(totalVakjes);
+    gridSize = dimension;
+    
+    // Toon spel scherm
+    document.getElementById('joinScreen').style.display = 'none';
+    document.getElementById('gameScreen').style.display = 'block';
+    document.getElementById('sessionCodeDisplay').innerText = currentSession.code;
+    document.getElementById('playerNameDisplay').innerText = currentPlayer.name;
+    
+    updateJokerDisplay();
+    renderBingoCard();
+    
+    // Luister naar sessie updates (voor vragen)
+    bingoSessions.doc(currentSession.id).onSnapshot((doc) => {
+      const data = doc.data();
+      if (data && data.currentSpin && data.currentSpin.icon) {
+        currentSpin = data.currentSpin;
+        showStudentQuestion(data.currentSpin);
+      } else {
+        const questionArea = document.getElementById('studentQuestionArea');
+        if (questionArea) questionArea.style.display = 'none';
+      }
+    });
+    
+    // Luister naar eigen player updates
+    bingoPlayers.doc(currentPlayer.id).onSnapshot((doc) => {
+      if (doc && doc.exists) {
+        const updated = doc.data();
+        if (updated) {
+          currentPlayer.correctCount = updated.correctCount;
+          jokers = updated.jokers || 0;
+          updateJokerDisplay();
+          if (updated.card) {
+            bingoCard = updated.card;
+            renderBingoCard();
+          }
+        }
+      }
+    });
+    
+    return true;
+    
+  } catch (error) {
+    console.error("Fout bij hervatten sessie:", error);
+    return false;
+  }
+}
 
 async function joinSession() {
   const name = document.getElementById('playerName').value.trim();
@@ -99,6 +188,10 @@ async function joinSession() {
     jokers = 0;
     correctStreak = 0;
 
+    // Sla studentId en sessionId op in localStorage voor hervatting
+    localStorage.setItem('hackshield_studentId', playerRef.id);
+    localStorage.setItem('hackshield_sessionId', currentSession.id);
+    
     // Toon spel scherm
     const joinScreen = document.getElementById('joinScreen');
     const gameScreen = document.getElementById('gameScreen');
@@ -149,6 +242,11 @@ async function joinSession() {
     const errorDiv = document.getElementById('joinError');
     if (errorDiv) errorDiv.innerText = 'Fout bij deelnemen: ' + error.message;
   }
+}
+
+function clearLocalStorage() {
+  localStorage.removeItem('hackshield_studentId');
+  localStorage.removeItem('hackshield_sessionId');
 }
 
 function showStudentQuestion(spin) {
