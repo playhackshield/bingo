@@ -666,3 +666,94 @@ header {
   margin: 15px 0;
 }
 
+
+/* Student header - kleiner dan teacher */
+.student-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+  background: rgba(255,255,255,0.1);
+  padding: 8px 15px;
+  border-radius: 12px;
+}
+
+.student-header .header-left h1 {
+  font-size: 1.2rem;
+  margin: 0;
+}
+
+.student-header .session-player-info {
+  display: flex;
+  gap: 15px;
+  font-size: 0.8rem;
+  background: rgba(0,0,0,0.2);
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+.student-header .joker-display {
+  font-size: 0.85rem;
+  padding: 4px 12px;
+}
+
+.student-header .btn-bingo,
+.student-header .btn-secondary {
+  padding: 5px 12px;
+  font-size: 0.85rem;
+}
+
+/* Student vraag stijlen */
+.student-question-card {
+  background: rgba(255,255,255,0.1);
+  border-radius: 15px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.student-question-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+  font-size: 1rem;
+  font-weight: normal;
+}
+
+.student-question-icon {
+  font-size: 1.8rem;
+}
+
+.student-question-thema {
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.student-question-text {
+  font-size: 1.6rem;
+  line-height: 1.3;
+  margin-bottom: 20px;
+  font-weight: bold;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .student-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .student-question-text {
+    font-size: 1.3rem;
+  }
+  
+  .student-question-icon {
+    font-size: 1.5rem;
+  }
+  
+  .student-question-thema {
+    font-size: 0.9rem;
+  }
+}
