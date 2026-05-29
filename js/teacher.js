@@ -106,6 +106,8 @@ async function loadExistingSession(sessionId) {
         }
       }
     });
+
+    updateHistoryDisplay();    
     
   } catch (error) {
     console.error("Fout bij laden sessie:", error);
@@ -289,6 +291,9 @@ async function spinWheel() {
       vraag: currentQuestion.vraag,
       opties: currentQuestion.opties
     });
+
+    // Na het updaten van de sessie
+    updateHistoryDisplay();
     
   } catch (error) {
     console.error("Fout bij spinWheel:", error);
