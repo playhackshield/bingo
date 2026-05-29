@@ -202,7 +202,7 @@ async function joinSession() {
     if (gameScreen) gameScreen.style.display = 'block';
     if (sessionCodeDisplay) sessionCodeDisplay.innerText = code;
     if (playerNameDisplay) playerNameDisplay.innerText = name;
-    
+  
     updateJokerDisplay();
     bingoCard = card;
     renderBingoCard();
