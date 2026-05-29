@@ -31,8 +31,10 @@ async function joinSession() {
   }
   const sessionDoc = snapshot.docs[0];
   currentSession = { id: sessionDoc.id, ...sessionDoc.data() };
-  gridSize = currentSession.gridSize;
-  console.log("Opgehaalde gridSize:", gridSize, "Type:", typeof gridSize);
+  const totalVakjes = currentSession.gridSize; // 9, 16 of 25
+  const dimension = Math.sqrt(totalVakjes);    // 3, 4 of 5
+  gridSize = dimension;
+  console.log(`Totaal vakjes: ${totalVakjes}, grid: ${gridSize}x${gridSize}`);
   
   // --- Genereer exact het aantal benodigde vakjes ---
   const totalCells = gridSize * gridSize;
