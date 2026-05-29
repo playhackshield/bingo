@@ -5,14 +5,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HackShield Bingo - Leerling</title>
   <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-  <link rel="icon" type="image/x-icon" href="favicon.ico">  
 </head>
 <body>
   <div class="container">
     <header>
-      <h1>🔒 HackShield Bingo</h1>
-      <button id="logout" class="btn-secondary">Uitloggen</button>
+      <div class="header-left">
+        <h1>HackShield Bingo</h1>
+        <div class="session-player-info">
+          <span>Sessie: <strong id="sessionCodeDisplay"></strong></span>
+          <span>Speler: <strong id="playerNameDisplay"></strong></span>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="joker-display">
+          🎴 Jokers: <strong id="jokerCount">0</strong>
+        </div>
+        <button id="bingoBtn" class="btn-bingo">🏆 BINGO!</button>
+        <button id="logout" class="btn-secondary">Uitloggen</button>
+      </div>
     </header>
 
     <!-- Inlogscherm -->
@@ -28,13 +40,6 @@
 
     <!-- Bingo scherm -->
     <div id="gameScreen" style="display:none;">
-      <div class="game-header">
-        <span>Sessie: <strong id="sessionCodeDisplay"></strong></span>
-        <span>Speler: <strong id="playerNameDisplay"></strong></span>
-        <span>🎴 Jokers: <strong id="jokerCount">0</strong></span>
-        <button id="bingoBtn" class="btn-bingo">🏆 BINGO!</button>
-      </div>
-
       <!-- Vraagweergave -->
       <div id="studentQuestionArea" style="display:none;" class="question-card">
         <div class="question-box">
@@ -47,7 +52,6 @@
 
       <!-- Bingokaart -->
       <div class="bingo-card-container">
-        <h3>📋 Jouw Bingokaart</h3>
         <div id="bingoCard" class="bingo-grid"></div>
         <p class="hint">Klik op een vakje om het aan of uit te vinken</p>
       </div>
