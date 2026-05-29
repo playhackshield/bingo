@@ -15,6 +15,28 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
   <script src="js/firebase-config.js"></script>
   <script src="js/sessions.js"></script>
+
+<script>
+  // DEBUG: Na het laden van firebase-config
+  console.log("3. firebase-config geladen");
+  console.log("4. firebase.apps.length:", firebase.apps.length);
+  console.log("5. auth object:", firebase.auth());
+  
+  // Check of er een gebruiker is ingelogd
+  firebase.auth().onAuthStateChanged(user => {
+    if (user) {
+      console.log("✅ GEBRUIKER IS INGELOGD:", user.email);
+      console.log("   User ID:", user.uid);
+      console.log("   Email verified:", user.emailVerified);
+    } else {
+      console.log("❌ GEEN GEBRUIKER INGELOGD");
+      console.log("   Redirect naar index.html over 2 seconden...");
+      setTimeout(() => {
+        window.location.href = 'index.html';
+      }, 2000);
+    }
+  });
+</script>
   
   <div class="container">
     <header>
