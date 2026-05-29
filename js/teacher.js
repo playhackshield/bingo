@@ -151,23 +151,21 @@ function updateHistoryDisplay() {
   
   historyContainer.innerHTML = '';
   
-  // Toon alle iconen in volgorde (meest recente onderaan of bovenaan? Laten we meest recente bovenaan doen)
+  // Toon alle iconen in volgorde (meest recente eerst)
   const reversedHistory = [...questionsHistory].reverse();
   
   reversedHistory.forEach((item, idx) => {
     const historyItem = document.createElement('div');
     historyItem.className = 'history-item';
+    const vraagNummer = questionsHistory.length - idx;
     historyItem.innerHTML = `
+      <div class="history-number">#${vraagNummer}</div>
       <div class="history-icon">${item.icon}</div>
-      <div class="history-info">
-        <div class="history-thema">${item.thema}</div>
-        <div class="history-number">#${questionsHistory.length - idx}</div>
-      </div>
     `;
+    historyItem.title = `${item.thema} - ${item.vraag.substring(0, 50)}...`;
     historyItem.onclick = () => {
-      // Optioneel: bij klikken naar die vraag gaan
-      if (confirm(`Ga naar vraag ${questionsHistory.length - idx}: ${item.thema}?`)) {
-        jumpToQuestion(questionsHistory.length - idx - 1);
+      if (confirm(`Ga naar vraag ${vraagNummer}: ${item.thema}?`)) {
+        jumpToQuestion(vraagNummer - 1);
       }
     };
     historyContainer.appendChild(historyItem);
