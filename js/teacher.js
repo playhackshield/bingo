@@ -3,12 +3,11 @@ let currentQuestion = null;
 let currentIcon = null;
 let currentThema = null;
 let currentQuestionIndex = 0;
-let questionsHistory = []; // Geschiedenis van gedraaide vragen
+let questionsHistory = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
   await anonymousLogin();
   
-  // Check of er een sessionId in de URL staat
   const urlParams = new URLSearchParams(window.location.search);
   const sessionIdFromUrl = urlParams.get('sessionId');
   
@@ -25,6 +24,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('spinBtn').onclick = spinWheel;
   document.getElementById('prevQuestionBtn').onclick = previousQuestion;
   document.getElementById('nextQuestionBtn').onclick = nextQuestion;
+  document.getElementById('endSessionBtn').onclick = endSession;
   document.getElementById('logout').onclick = () => auth.signOut().then(() => location.reload());
 });
 
@@ -89,6 +89,8 @@ async function loadExistingSession(sessionId) {
     document.getElementById('activeSession').style.display = 'block';
     document.getElementById('sessionCode').innerText = sessionData.code;
     
+    updateQuestionCounter();
+    
     loadPlayers();
     loadClaims();
     
@@ -109,6 +111,15 @@ async function loadExistingSession(sessionId) {
     console.error("Fout bij laden sessie:", error);
     alert("Kon sessie niet laden: " + error.message);
     window.location.href = 'sessions.html';
+  }
+}
+
+function updateQuestionCounter() {
+  const counterDiv = document.getElementById('questionCounter');
+  if (counterDiv && questionsHistory.length > 0) {
+    counterDiv.innerHTML = `Vraag ${currentQuestionIndex} van ${questionsHistory.length}`;
+  } else if (counterDiv) {
+    counterDiv.innerHTML = 'Nog geen vragen gedraaid';
   }
 }
 
@@ -144,15 +155,12 @@ async function spinWheel() {
   const wheel = document.getElementById('wheel');
   if (!wheel) return;
   
-  // Toon groot vraagteken met aftel animatie
   wheel.innerHTML = '<div class="wheel-countdown">?</div>';
   wheel.classList.add('spinning');
   
-  // Wacht 2 seconden (simuleert draaien)
   await new Promise(resolve => setTimeout(resolve, 2000));
   
   try {
-    // Laad alle beschikbare iconen
     const res = await fetch('data/vragen.json');
     const allQuestions = await res.json();
     
@@ -173,7 +181,6 @@ async function spinWheel() {
       correct: selected.correct
     };
     
-    // Bewaar in geschiedenis
     questionsHistory.push({
       icon: currentIcon,
       thema: currentThema,
@@ -186,6 +193,8 @@ async function spinWheel() {
     
     wheel.classList.remove('spinning');
     wheel.innerHTML = `<div class="wheel-icon" style="font-size: 6rem;">${currentIcon}</div>`;
+    
+    updateQuestionCounter();
     
     await bingoSessions.doc(currentSessionId).update({
       currentSpin: {
@@ -228,11 +237,38 @@ function showCurrentQuestion(spinData) {
     btn.onclick = () => {
       document.querySelectorAll('#options .option').forEach(o => o.classList.remove('selected'));
       btn.classList.add('selected');
+      showAnswerFeedback(btn, idx);
     };
     optionsDiv.appendChild(btn);
   });
   
   document.getElementById('feedback').innerHTML = '';
+}
+
+function showAnswerFeedback(selectedBtn, selectedIndex) {
+  const correctIndex = currentQuestion.correct;
+  const feedback = document.getElementById('feedback');
+  
+  document.querySelectorAll('#options .option').forEach((opt, idx) => {
+    if (idx === correctIndex) {
+      opt.style.background = '#4caf50';
+      opt.style.color = 'white';
+    } else if (idx === selectedIndex && idx !== correctIndex) {
+      opt.style.background = '#f44336';
+      opt.style.color = 'white';
+    }
+  });
+  
+  if (selectedIndex === correctIndex) {
+    feedback.innerHTML = '<span style="color:#4caf50;">✅ Juist! Leerlingen kunnen vakjes wegstrepen.</span>';
+  } else {
+    feedback.innerHTML = `<span style="color:#f44336;">❌ Fout! Het juiste antwoord is: ${currentQuestion.opties[correctIndex]}</span>`;
+  }
+  
+  bingoSessions.doc(currentSessionId).update({
+    currentAnswerRevealed: true,
+    correctAnswer: correctIndex
+  }).catch(console.error);
 }
 
 async function previousQuestion() {
@@ -241,7 +277,6 @@ async function previousQuestion() {
     return;
   }
   
-  // Ga naar vorige vraag in geschiedenis
   currentQuestionIndex--;
   const prevSpin = questionsHistory[currentQuestionIndex - 1];
   
@@ -269,6 +304,7 @@ async function previousQuestion() {
     const wheel = document.getElementById('wheel');
     if (wheel) wheel.innerHTML = `<div class="wheel-icon" style="font-size: 6rem;">${currentIcon}</div>`;
     
+    updateQuestionCounter();
     showCurrentQuestion({
       icon: currentIcon,
       thema: currentThema,
@@ -279,11 +315,9 @@ async function previousQuestion() {
 }
 
 async function nextQuestion() {
-  // Reset vraag area en wiel
   document.getElementById('questionArea').style.display = 'none';
   document.getElementById('feedback').innerHTML = '';
   
-  // Reset wiel (leegmaken voor volgende ronde)
   const wheel = document.getElementById('wheel');
   if (wheel) {
     wheel.innerHTML = '';
@@ -303,11 +337,19 @@ async function nextQuestion() {
   console.log("Klaar voor volgende ronde. Draai opnieuw!");
 }
 
-function resetWheel() {
-  const wheel = document.getElementById('wheel');
-  if (wheel) {
-    wheel.innerHTML = '';
-    wheel.style.transform = 'rotate(0deg)';
-    wheel.classList.remove('spinning');
+async function endSession() {
+  if (!confirm("Weet je zeker dat je deze sessie wilt beëindigen? Leerlingen kunnen niet meer deelnemen.")) {
+    return;
+  }
+  
+  try {
+    await bingoSessions.doc(currentSessionId).update({
+      active: false,
+      endedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    window.location.href = 'sessions.html';
+  } catch (error) {
+    console.error("Fout bij beëindigen sessie:", error);
+    alert("Fout: " + error.message);
   }
 }
