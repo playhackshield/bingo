@@ -50,7 +50,7 @@
             auth.signInWithEmailAndPassword(email, password)
                 .then(() => {
                     // Door naar hoofd app
-                    window.location.href = 'teacher.html';
+                    window.location.href = 'sessions.html';
                 })
                 .catch(error => {
                     document.getElementById('error').textContent = error.message;
@@ -63,7 +63,7 @@
                 auth.signOut()
                     .then(() => {
                         console.log("Uitgelogd");
-                        window.location.href = 'sessions.html';
+                        window.location.href = 'index.html';
                     })
                     .catch((error) => {
                         console.error("Uitloggen fout:", error);
