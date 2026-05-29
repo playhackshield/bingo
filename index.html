@@ -9,14 +9,14 @@
         button { width: 100%; padding: 10px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px; }
         .error { color: red; font-size: 14px; margin-top: 10px; }
         .user-banner {
-    background: #e3f2fd;
-    padding: 10px;
-    border-radius: 5px;
-    margin-bottom: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
+            background: #e3f2fd;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
     </style>
 </head>
 <body>
@@ -27,7 +27,7 @@
         <button onclick="login()">Inloggen</button>
         <div id="error" class="error"></div>
 
-        <div id="userBanner" class="user-banner">
+        <div id="userBanner" class="user-banner" style="display: none;">
             <div>
                 Ingelogd als: <strong id="currentUserEmail"></strong>
                 <button onclick="logout()">Uitloggen</button>
@@ -35,21 +35,24 @@
         </div>        
     </div>
     
+    <!-- Eerst Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <!-- Dan je eigen config (initialiseert Firebase) -->
     <script src="js/firebase-config.js"></script>
     
     <script>
-        firebase.initializeApp(firebaseConfig);
+        // Geen extra initializeApp meer!
         
         function login() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             
             auth.signInWithEmailAndPassword(email, password)
-                .then(() => {
-                    // Door naar hoofd app
+                .then((userCredential) => {
+                    console.log("Ingelogd:", userCredential.user.email);
                     window.location.href = 'sessions.html';
                 })
                 .catch(error => {
@@ -57,7 +60,6 @@
                 });
         }
 
-        // Uitloggen
         function logout() {
             if (confirm("Weet je zeker dat je wilt uitloggen?")) {
                 auth.signOut()
@@ -84,14 +86,19 @@
                 banner.style.display = 'flex';
                 document.getElementById('currentUserEmail').textContent = user.email;
             } else {
-                document.getElementById('currentUserEmail').textContent = '(Niet ingelogd)';
+                banner.style.display = 'none';
             }
         }
         
         // Roep aan bij auth state change
         auth.onAuthStateChanged((user) => {
             updateUserBanner();
-        });        
+            if (user) {
+                console.log("Gebruiker is ingelogd:", user.email);
+            } else {
+                console.log("Geen gebruiker ingelogd");
+            }
+        });
     </script>
 </body>
 </html>
