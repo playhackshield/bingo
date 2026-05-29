@@ -514,14 +514,6 @@ header {
   border-color: #4caf50;
 }
 
-/* Grotere vraag tekst */
-.question-text {
-  font-size: 1.4rem;
-  line-height: 1.5;
-  margin-bottom: 25px;
-  font-weight: bold;
-}
-
 /* Navigatie knoppen */
 .question-nav {
   display: flex;
