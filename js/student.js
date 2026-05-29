@@ -253,6 +253,8 @@ function showStudentQuestion(spin) {
   console.log("Toon vraag voor student:", spin.thema);
   
   const questionArea = document.getElementById('studentQuestionArea');
+  const questionIcon = document.getElementById('studentQuestionIcon');
+  const questionThema = document.getElementById('studentQuestionThema');
   const questionText = document.getElementById('studentQuestionText');
   const optionsDiv = document.getElementById('studentOptions');
   const submitBtn = document.getElementById('submitAnswerBtn');
@@ -264,11 +266,11 @@ function showStudentQuestion(spin) {
   }
   
   questionArea.style.display = 'block';
-  questionText.innerHTML = `
-    <span style="font-size:2rem;">${spin.icon}</span><br>
-    <strong>${spin.thema}</strong><br><br>
-    ${spin.vraag}
-  `;
+  
+  // Icoon en thema apart tonen
+  if (questionIcon) questionIcon.innerHTML = spin.icon;
+  if (questionThema) questionThema.innerHTML = spin.thema;
+  questionText.innerHTML = spin.vraag;
   
   optionsDiv.innerHTML = '';
   if (spin.opties && Array.isArray(spin.opties)) {
