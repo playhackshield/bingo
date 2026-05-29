@@ -15,16 +15,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     currentSessionId = sessionIdFromUrl;
     await loadExistingSession(sessionIdFromUrl);
   } else {
-    document.getElementById('setupScreen').style.display = 'block';
-    document.getElementById('activeSession').style.display = 'none';
+    const setupScreen = document.getElementById('setupScreen');
+    const activeSession = document.getElementById('activeSession');
+    if (setupScreen) setupScreen.style.display = 'block';
+    if (activeSession) activeSession.style.display = 'none';
   }
   
   // Event listeners
-  document.getElementById('createSessionBtn').onclick = createSession;
-  document.getElementById('spinBtn').onclick = spinWheel;
-  document.getElementById('prevQuestionBtn').onclick = previousQuestion;
-  document.getElementById('nextQuestionBtn').onclick = nextQuestion;
-  document.getElementById('endSessionBtn').onclick = endSession;
+  const createBtn = document.getElementById('createSessionBtn');
+  const prevBtn = document.getElementById('prevQuestionBtn');
+  const nextBtn = document.getElementById('nextQuestionBtn');
+  const endBtn = document.getElementById('endSessionBtn');
+  const wheel = document.getElementById('wheel');
+  
+  if (createBtn) createBtn.onclick = createSession;
+  if (prevBtn) prevBtn.onclick = previousQuestion;
+  if (nextBtn) nextBtn.onclick = nextQuestion;
+  if (endBtn) endBtn.onclick = endSession;
+  if (wheel) wheel.onclick = spinWheel;
 });
 
 async function createSession() {
@@ -50,7 +58,7 @@ async function createSession() {
     
     document.getElementById('setupScreen').style.display = 'none';
     document.getElementById('activeSession').style.display = 'block';
-    document.getElementById('sessionCode').innerText = code;
+    updatePageTitle(code);
     
     loadPlayers();
     loadClaims();
@@ -70,6 +78,13 @@ async function createSession() {
   }
 }
 
+function updatePageTitle(code) {
+  const titleEl = document.getElementById('pageTitle');
+  if (titleEl && code) {
+    titleEl.textContent = `HackShield Bingo (Code: ${code})`;
+  }
+}
+
 async function loadExistingSession(sessionId) {
   try {
     const sessionDoc = await bingoSessions.doc(sessionId).get();
@@ -86,9 +101,10 @@ async function loadExistingSession(sessionId) {
     
     document.getElementById('setupScreen').style.display = 'none';
     document.getElementById('activeSession').style.display = 'block';
-    document.getElementById('sessionCode').innerText = sessionData.code;
+    updatePageTitle(sessionData.code);
     
     updateQuestionCounter();
+    updateHistoryDisplay();
     
     loadPlayers();
     loadClaims();
@@ -105,8 +121,6 @@ async function loadExistingSession(sessionId) {
         }
       }
     });
-
-    updateHistoryDisplay();    
     
   } catch (error) {
     console.error("Fout bij laden sessie:", error);
@@ -116,17 +130,20 @@ async function loadExistingSession(sessionId) {
 }
 
 function updateQuestionCounter() {
-  const counterDiv = document.getElementById('questionCounter');
-  if (counterDiv && questionsHistory.length > 0) {
-    counterDiv.innerHTML = `Vraag ${currentQuestionIndex} van ${questionsHistory.length}`;
-  } else if (counterDiv) {
+  const counterDiv = document.getElementById('currentSubject');
+  if (counterDiv && currentThema) {
+    counterDiv.innerHTML = `Vraag ${currentQuestionIndex} van ${questionsHistory.length}: ${currentThema}`;
+  } else if (counterDiv && questionsHistory.length === 0) {
     counterDiv.innerHTML = 'Nog geen vragen gedraaid';
   }
 }
 
 async function loadPlayers() {
   bingoPlayers.where('sessionId', '==', currentSessionId).onSnapshot(snapshot => {
-    document.getElementById('playerCount').innerText = snapshot.size;
+    const playersTitle = document.getElementById('playersTitle');
+    if (playersTitle) {
+      playersTitle.innerHTML = `Deelnemers (${snapshot.size})`;
+    }
     const list = document.getElementById('playersList');
     list.innerHTML = '';
     snapshot.forEach(doc => {
@@ -135,80 +152,6 @@ async function loadPlayers() {
       li.innerText = `${p.name} (jokers: ${p.jokers || 0})`;
       list.appendChild(li);
     });
-  });
-}
-
-// Functie om geschiedenis weer te geven
-function updateHistoryDisplay() {
-  const historyContainer = document.getElementById('historyList');
-  if (!historyContainer) return;
-  
-  if (!questionsHistory || questionsHistory.length === 0) {
-    historyContainer.innerHTML = '<div class="empty-history">Nog geen iconen getrokken</div>';
-    return;
-  }
-  
-  historyContainer.innerHTML = '';
-  
-  // Toon alle iconen in volgorde (meest recente eerst)
-  const reversedHistory = [...questionsHistory].reverse();
-  
-  reversedHistory.forEach((item, idx) => {
-    const historyItem = document.createElement('div');
-    historyItem.className = 'history-item';
-    const vraagNummer = questionsHistory.length - idx;
-    historyItem.innerHTML = `
-      <div class="history-number">#${vraagNummer}</div>
-      <div class="history-icon">${item.icon}</div>
-    `;
-    historyItem.title = `${item.thema} - ${item.vraag.substring(0, 50)}...`;
-    historyItem.onclick = () => {
-      if (confirm(`Ga naar vraag ${vraagNummer}: ${item.thema}?`)) {
-        jumpToQuestion(vraagNummer - 1);
-      }
-    };
-    historyContainer.appendChild(historyItem);
-  });
-}
-
-// Functie om naar een specifieke vraag te springen
-async function jumpToQuestion(index) {
-  if (index < 0 || index >= questionsHistory.length) return;
-  
-  const targetQuestion = questionsHistory[index];
-  if (!targetQuestion) return;
-  
-  currentQuestionIndex = index + 1;
-  currentIcon = targetQuestion.icon;
-  currentThema = targetQuestion.thema;
-  currentQuestion = {
-    vraag: targetQuestion.vraag,
-    opties: targetQuestion.opties,
-    correct: targetQuestion.correct
-  };
-  
-  await bingoSessions.doc(currentSessionId).update({
-    currentSpin: {
-      icon: currentIcon,
-      thema: currentThema,
-      vraag: currentQuestion.vraag,
-      opties: currentQuestion.opties,
-      correct: currentQuestion.correct
-    },
-    currentAnswerRevealed: false,
-    correctAnswer: null
-  });
-  
-  const wheel = document.getElementById('wheel');
-  if (wheel) wheel.innerHTML = `<div class="wheel-icon" style="font-size: 6rem;">${currentIcon}</div>`;
-  
-  updateQuestionCounter();
-  updateHistoryDisplay();
-  showCurrentQuestion({
-    icon: currentIcon,
-    thema: currentThema,
-    vraag: currentQuestion.vraag,
-    opties: currentQuestion.opties
   });
 }
 
@@ -230,7 +173,8 @@ async function spinWheel() {
   const wheel = document.getElementById('wheel');
   if (!wheel) return;
   
-  wheel.innerHTML = '<div class="wheel-countdown">?</div>';
+  // Toon draaiende animatie met icoon
+  wheel.innerHTML = '<i class="fas fa-cog fa-spin wheel-icon-default" style="font-size: 4rem;"></i>';
   wheel.classList.add('spinning');
   
   await new Promise(resolve => setTimeout(resolve, 2000));
@@ -267,9 +211,10 @@ async function spinWheel() {
     currentQuestionIndex = questionsHistory.length;
     
     wheel.classList.remove('spinning');
-    wheel.innerHTML = `<div class="wheel-icon" style="font-size: 6rem;">${currentIcon}</div>`;
+    wheel.innerHTML = `<div class="wheel-icon">${currentIcon}</div>`;
     
     updateQuestionCounter();
+    updateHistoryDisplay();
     
     await bingoSessions.doc(currentSessionId).update({
       currentSpin: {
@@ -288,21 +233,18 @@ async function spinWheel() {
       vraag: currentQuestion.vraag,
       opties: currentQuestion.opties
     });
-
-    // Na het updaten van de sessie
-    updateHistoryDisplay();
     
   } catch (error) {
     console.error("Fout bij spinWheel:", error);
     wheel.classList.remove('spinning');
-    wheel.innerHTML = '<div class="wheel-icon">❌</div>';
+    wheel.innerHTML = '<i class="fas fa-cog wheel-icon-default"></i>';
     alert("Fout bij laden vragen: " + error.message);
   }
 }
 
 function showCurrentQuestion(spinData) {
   document.getElementById('questionArea').style.display = 'block';
-  document.getElementById('currentSubject').innerHTML = `${spinData.icon} ${spinData.thema}`;
+  // Alleen de vraag tekst (titel met thema staat al in currentSubject)
   document.getElementById('questionText').innerHTML = spinData.vraag;
   
   const optionsDiv = document.getElementById('options');
@@ -349,6 +291,77 @@ function showAnswerFeedback(selectedBtn, selectedIndex) {
   }).catch(console.error);
 }
 
+function updateHistoryDisplay() {
+  const historyContainer = document.getElementById('historyList');
+  if (!historyContainer) return;
+  
+  if (!questionsHistory || questionsHistory.length === 0) {
+    historyContainer.innerHTML = '<div class="empty-history">Nog geen iconen getrokken</div>';
+    return;
+  }
+  
+  historyContainer.innerHTML = '';
+  
+  const reversedHistory = [...questionsHistory].reverse();
+  
+  reversedHistory.forEach((item, idx) => {
+    const historyItem = document.createElement('div');
+    historyItem.className = 'history-item';
+    const vraagNummer = questionsHistory.length - idx;
+    historyItem.innerHTML = `
+      <div class="history-number">#${vraagNummer}</div>
+      <div class="history-icon">${item.icon}</div>
+    `;
+    historyItem.title = `${item.thema} - ${item.vraag.substring(0, 50)}...`;
+    historyItem.onclick = () => {
+      if (confirm(`Ga naar vraag ${vraagNummer}: ${item.thema}?`)) {
+        jumpToQuestion(vraagNummer - 1);
+      }
+    };
+    historyContainer.appendChild(historyItem);
+  });
+}
+
+async function jumpToQuestion(index) {
+  if (index < 0 || index >= questionsHistory.length) return;
+  
+  const targetQuestion = questionsHistory[index];
+  if (!targetQuestion) return;
+  
+  currentQuestionIndex = index + 1;
+  currentIcon = targetQuestion.icon;
+  currentThema = targetQuestion.thema;
+  currentQuestion = {
+    vraag: targetQuestion.vraag,
+    opties: targetQuestion.opties,
+    correct: targetQuestion.correct
+  };
+  
+  await bingoSessions.doc(currentSessionId).update({
+    currentSpin: {
+      icon: currentIcon,
+      thema: currentThema,
+      vraag: currentQuestion.vraag,
+      opties: currentQuestion.opties,
+      correct: currentQuestion.correct
+    },
+    currentAnswerRevealed: false,
+    correctAnswer: null
+  });
+  
+  const wheel = document.getElementById('wheel');
+  if (wheel) wheel.innerHTML = `<div class="wheel-icon">${currentIcon}</div>`;
+  
+  updateQuestionCounter();
+  updateHistoryDisplay();
+  showCurrentQuestion({
+    icon: currentIcon,
+    thema: currentThema,
+    vraag: currentQuestion.vraag,
+    opties: currentQuestion.opties
+  });
+}
+
 async function previousQuestion() {
   if (currentQuestionIndex <= 1) {
     alert("Dit is de eerste vraag, er is geen vorige vraag.");
@@ -380,9 +393,10 @@ async function previousQuestion() {
     });
     
     const wheel = document.getElementById('wheel');
-    if (wheel) wheel.innerHTML = `<div class="wheel-icon" style="font-size: 6rem;">${currentIcon}</div>`;
+    if (wheel) wheel.innerHTML = `<div class="wheel-icon">${currentIcon}</div>`;
     
     updateQuestionCounter();
+    updateHistoryDisplay();
     showCurrentQuestion({
       icon: currentIcon,
       thema: currentThema,
@@ -398,7 +412,7 @@ async function nextQuestion() {
   
   const wheel = document.getElementById('wheel');
   if (wheel) {
-    wheel.innerHTML = '';
+    wheel.innerHTML = '<i class="fas fa-cog wheel-icon-default"></i>';
     wheel.classList.remove('spinning');
   }
   
@@ -412,7 +426,7 @@ async function nextQuestion() {
   currentIcon = null;
   currentThema = null;
   
-  console.log("Klaar voor volgende ronde. Draai opnieuw!");
+  console.log("Klaar voor volgende ronde. Klik op het wiel om te draaien!");
 }
 
 async function endSession() {
