@@ -10,7 +10,7 @@
 </head>
 <body>
   <div class="container">
-    <header>
+    <header class="student-header">
       <div class="header-left">
         <h1>HackShield Bingo</h1>
         <div class="session-player-info">
@@ -40,14 +40,16 @@
 
     <!-- Bingo scherm -->
     <div id="gameScreen" style="display:none;">
-      <!-- Vraagweergave -->
-      <div id="studentQuestionArea" style="display:none;" class="question-card">
-        <div class="question-box">
-          <div id="studentQuestionText" class="question-text"></div>
-          <div id="studentOptions" class="options"></div>
-          <button id="submitAnswerBtn" class="btn-primary">Antwoord verzenden</button>
-          <div id="answerFeedback" class="feedback"></div>
+      <!-- Vraagweergave (aangepaste stijl) -->
+      <div id="studentQuestionArea" style="display:none;" class="student-question-card">
+        <div class="student-question-header">
+          <span class="student-question-icon" id="studentQuestionIcon"></span>
+          <span class="student-question-thema" id="studentQuestionThema"></span>
         </div>
+        <div id="studentQuestionText" class="student-question-text"></div>
+        <div id="studentOptions" class="options"></div>
+        <button id="submitAnswerBtn" class="btn-primary">Antwoord verzenden</button>
+        <div id="answerFeedback" class="feedback"></div>
       </div>
 
       <!-- Bingokaart -->
