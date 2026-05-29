@@ -222,48 +222,48 @@ async function spinWheel() {
   if (!wheel) return;
   
   console.log("=== SPIN WHEEL DEBUG ===");
-  console.log("QuestionsHistory lengte:", questionsHistory.length);
-  console.log("QuestionsHistory inhoud:", questionsHistory.map(i => `${i.icon}_${i.thema}`));
+  console.log("QuestionsHistory lengte (thema's):", questionsHistory.length);
   
-  // Haal alle beschikbare iconen op
-  let allAvailableIcons = [];
+  // Haal alle beschikbare thema's op (uniek per thema, niet per icoon)
+  let allAvailableThemas = [];
   try {
     const res = await fetch('data/vragen.json');
     const allQuestions = await res.json();
     
+    // Gebruik het eerste icoon van elk thema, maar tel elk thema maar één keer
     allQuestions.forEach(q => {
-      q.iconen.forEach(icon => {
-        allAvailableIcons.push({
-          icon: icon,
-          thema: q.thema,
-          vraag: q.vraag,
-          opties: q.opties,
-          correct: q.correct
-        });
+      // Neem het eerste icoon als representant van het thema
+      const firstIcon = q.iconen[0];
+      allAvailableThemas.push({
+        icon: firstIcon,
+        thema: q.thema,
+        vraag: q.vraag,
+        opties: q.opties,
+        correct: q.correct,
+        alleIconen: q.iconen // Bewaar alle iconen voor eventueel later gebruik
       });
     });
   } catch (error) {
-    console.error("Fout bij laden iconen:", error);
+    console.error("Fout bij laden thema's:", error);
     alert("Fout bij laden vragen: " + error.message);
     return;
   }
   
-  console.log("Totaal beschikbare iconen:", allAvailableIcons.length);
+  console.log("Totaal beschikbare thema's:", allAvailableThemas.length);
   
-  // Bepaal welke iconen al gebruikt zijn
-  const usedKeys = questionsHistory.map(item => `${item.icon}_${item.thema}`);
-  console.log("Gebruikte iconen:", usedKeys);
+  // Bepaal welke thema's al gebruikt zijn (op basis van thema-naam)
+  const usedThemas = questionsHistory.map(item => item.thema);
+  console.log("Gebruikte thema's:", usedThemas);
   
-  // Filter de niet-gebruikte iconen
-  const remainingIcons = allAvailableIcons.filter(icon => {
-    const key = `${icon.icon}_${icon.thema}`;
-    return !usedKeys.includes(key);
-  });
+  // Filter de niet-gebruikte thema's
+  const remainingThemas = allAvailableThemas.filter(thema => 
+    !usedThemas.includes(thema.thema)
+  );
   
-  console.log("Resterende iconen:", remainingIcons.length);
+  console.log("Resterende thema's:", remainingThemas.length);
   
-  if (remainingIcons.length === 0) {
-    alert("Alle vragen zijn geweest! Er is geen nieuwe vraag meer beschikbaar.");
+  if (remainingThemas.length === 0) {
+    alert("Alle thema's zijn geweest! Je kunt een nieuwe sessie starten of de geschiedenis resetten.");
     return;
   }
   
@@ -274,10 +274,10 @@ async function spinWheel() {
   await new Promise(resolve => setTimeout(resolve, 2000));
   
   try {
-    const randomIndex = Math.floor(Math.random() * remainingIcons.length);
-    const selected = remainingIcons[randomIndex];
+    const randomIndex = Math.floor(Math.random() * remainingThemas.length);
+    const selected = remainingThemas[randomIndex];
     
-    console.log("Gekozen icoon:", selected.icon, selected.thema);
+    console.log("Gekozen thema:", selected.thema, "met icoon:", selected.icon);
     
     currentIcon = selected.icon;
     currentThema = selected.thema;
@@ -293,6 +293,7 @@ async function spinWheel() {
       vraag: currentQuestion.vraag,
       opties: currentQuestion.opties,
       correct: currentQuestion.correct,
+      alleIconen: selected.alleIconen, // Bewaar voor als je later meerdere iconen wilt tonen
       timestamp: new Date().toISOString()
     });
     currentQuestionIndex = questionsHistory.length;
