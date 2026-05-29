@@ -317,13 +317,10 @@ function updateHistoryDisplay() {
   reversedHistory.forEach((item, idx) => {
     const historyItem = document.createElement('div');
     historyItem.className = 'history-item';
-    const vraagNummer = questionsHistory.length - idx;
-    historyItem.innerHTML = `
-      <div class="history-number">#${vraagNummer}</div>
-      <div class="history-icon">${item.icon}</div>
-    `;
+    historyItem.innerHTML = `<div class="history-icon">${item.icon}</div>`;
     historyItem.title = `${item.thema} - ${item.vraag.substring(0, 50)}...`;
     historyItem.onclick = () => {
+      const vraagNummer = questionsHistory.length - idx;
       if (confirm(`Ga naar vraag ${vraagNummer}: ${item.thema}?`)) {
         jumpToQuestion(vraagNummer - 1);
       }
