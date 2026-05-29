@@ -5,6 +5,7 @@ let currentThema = null;
 let currentQuestionIndex = 0;
 let questionsHistory = [];
 let currentUser = null;
+let allAvailableIcons = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
   // Wacht op Firebase auth state
@@ -53,6 +54,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function createSession() {
+  await loadAllIcons();
+  
   const gridSize = parseInt(document.getElementById('gridSize').value);
   const code = generateSessionCode();
   
@@ -105,6 +108,8 @@ function updatePageTitle(code) {
 
 async function loadExistingSession(sessionId) {
   try {
+    await loadAllIcons();
+    
     const sessionDoc = await bingoSessions.doc(sessionId).get();
     if (!sessionDoc.exists) {
       alert("Sessie niet gevonden");
@@ -189,28 +194,56 @@ async function loadClaims() {
   });
 }
 
+async function loadAllIcons() {
+  try {
+    const res = await fetch('data/vragen.json');
+    const allQuestions = await res.json();
+    
+    allAvailableIcons = [];
+    allQuestions.forEach(q => {
+      q.iconen.forEach(icon => {
+        allAvailableIcons.push({
+          icon: icon,
+          thema: q.thema,
+          vraag: q.vraag,
+          opties: q.opties,
+          correct: q.correct
+        });
+      });
+    });
+    console.log(`${allAvailableIcons.length} iconen geladen`);
+  } catch (error) {
+    console.error("Fout bij laden iconen:", error);
+  }
+}
+
 async function spinWheel() {
   const wheel = document.getElementById('wheel');
   if (!wheel) return;
   
+  // Controleer of er nog ongebruikte iconen zijn
+  const allAvailableIcons = getAllAvailableIcons();
+  const usedIcons = questionsHistory.map(item => `${item.icon}_${item.thema}`);
+  const remainingIcons = allAvailableIcons.filter(icon => 
+    !usedIcons.includes(`${icon.icon}_${icon.thema}`)
+  );
+  
+  if (remainingIcons.length === 0) {
+    alert("Alle vragen zijn geweest! Er is geen nieuwe vraag meer beschikbaar.");
+    return;
+  }
+  
+  // Toon draaiende animatie
   wheel.innerHTML = '<i class="fas fa-cog fa-spin wheel-icon-default" style="font-size: 4rem;"></i>';
   wheel.classList.add('spinning');
   
   await new Promise(resolve => setTimeout(resolve, 2000));
   
   try {
-    const res = await fetch('data/vragen.json');
-    const allQuestions = await res.json();
+    // Kies willekeurig uit de resterende iconen
+    const randomIndex = Math.floor(Math.random() * remainingIcons.length);
+    const selected = remainingIcons[randomIndex];
     
-    let allIcons = [];
-    allQuestions.forEach(q => {
-      q.iconen.forEach(icon => {
-        allIcons.push({ icon, thema: q.thema, vraag: q.vraag, opties: q.opties, correct: q.correct });
-      });
-    });
-    
-    const randomIndex = Math.floor(Math.random() * allIcons.length);
-    const selected = allIcons[randomIndex];
     currentIcon = selected.icon;
     currentThema = selected.thema;
     currentQuestion = {
@@ -259,6 +292,16 @@ async function spinWheel() {
     wheel.innerHTML = '<i class="fas fa-cog wheel-icon-default"></i>';
     alert("Fout bij laden vragen: " + error.message);
   }
+}
+
+// Helper functie om alle beschikbare iconen te laden
+function getAllAvailableIcons() {
+  // Deze functie moet alle iconen uit de JSON laden
+  // We slaan ze op in een globale variabele bij het laden van de pagina
+  if (window.allAvailableIcons) {
+    return window.allAvailableIcons;
+  }
+  return []; // Fallback
 }
 
 function showCurrentQuestion(spinData) {
