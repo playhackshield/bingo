@@ -296,9 +296,40 @@ li {
   margin-bottom: 10px;
 }
 
+/* Header layout */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
 .header-buttons {
   display: flex;
   gap: 10px;
+}
+
+.btn-danger {
+  background: #dc2626;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 30px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btn-danger:hover {
+  background: #b91c1c;
 }
 
 .form-group {
