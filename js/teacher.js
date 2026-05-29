@@ -509,3 +509,16 @@ async function endSession() {
     alert("Fout: " + error.message);
   }
 }
+
+function resetQuestionsHistory() {
+  if (confirm("Weet je zeker dat je de geschiedenis wilt resetten? Alle vragen kunnen opnieuw verschijnen.")) {
+    questionsHistory = [];
+    currentQuestionIndex = 0;
+    updateHistoryDisplay();
+    updateQuestionCounter();
+    
+    bingoSessions.doc(currentSessionId).update({
+      questionsHistory: []
+    });
+  }
+}
