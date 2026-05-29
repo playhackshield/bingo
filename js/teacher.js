@@ -131,10 +131,13 @@ async function loadExistingSession(sessionId) {
 
 function updateQuestionCounter() {
   const counterDiv = document.getElementById('currentSubject');
-  if (counterDiv && currentThema) {
-    counterDiv.innerHTML = `Vraag ${currentQuestionIndex} van ${questionsHistory.length}: ${currentThema}`;
+  if (counterDiv && currentThema && currentQuestionIndex > 0) {
+    // Alleen "Vraag X: Onderwerp" zonder "van Y"
+    counterDiv.innerHTML = `Vraag ${currentQuestionIndex}: ${currentThema}`;
   } else if (counterDiv && questionsHistory.length === 0) {
     counterDiv.innerHTML = 'Nog geen vragen gedraaid';
+  } else if (counterDiv && currentThema) {
+    counterDiv.innerHTML = `Vraag ${currentQuestionIndex}: ${currentThema}`;
   }
 }
 
@@ -244,8 +247,15 @@ async function spinWheel() {
 
 function showCurrentQuestion(spinData) {
   document.getElementById('questionArea').style.display = 'block';
-  // Alleen de vraag tekst (titel met thema staat al in currentSubject)
+  // Alleen de vraag tekst (titel staat al in currentSubject)
   document.getElementById('questionText').innerHTML = spinData.vraag;
+  
+  // Update de titel ook met de juiste vraagnummer
+  if (currentQuestionIndex > 0) {
+    document.getElementById('currentSubject').innerHTML = `Vraag ${currentQuestionIndex}: ${spinData.thema}`;
+  } else {
+    document.getElementById('currentSubject').innerHTML = `Vraag ${questionsHistory.length}: ${spinData.thema}`;
+  }
   
   const optionsDiv = document.getElementById('options');
   optionsDiv.innerHTML = '';
