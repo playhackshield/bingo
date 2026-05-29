@@ -279,7 +279,7 @@ async function previousQuestion() {
 }
 
 async function nextQuestion() {
-  // Dit is de "Volgende ronde" functionaliteit
+  // Reset vraag area en wiel
   document.getElementById('questionArea').style.display = 'none';
   document.getElementById('feedback').innerHTML = '';
   
