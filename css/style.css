@@ -6,19 +6,33 @@
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background: linear-gradient(135deg, #1e3c72, #2a5298);
-  color: #333;
+  color: white; /* Alle tekst standaard wit */
   padding: 20px;
+  min-height: 100vh;
 }
 .container {
   max-width: 1200px;
   margin: 0 auto;
 }
 .card {
-  background: white;
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(10px);
   padding: 20px;
   border-radius: 15px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.2);
   margin-bottom: 20px;
+  color: white;
+}
+.card h2, .card h3, .card label {
+  color: white;
+}
+.card input, .card select {
+  background: rgba(255,255,255,0.9);
+  color: #333;
+  padding: 8px;
+  border-radius: 8px;
+  border: none;
+  margin: 10px 0;
 }
 .btn-primary, .btn-secondary, .btn-bingo {
   padding: 10px 20px;
@@ -31,22 +45,36 @@ body {
 .btn-primary { background: #4caf50; color: white; }
 .btn-secondary { background: #f44336; color: white; }
 .btn-bingo { background: #ff9800; color: white; font-size: 1.2em; }
+
+/* Wiel container */
 .wheel-container {
   text-align: center;
   margin: 20px;
+  position: relative;
 }
 .wheel {
-  width: 200px;
-  height: 200px;
+  width: 250px;
+  height: 250px;
   border-radius: 50%;
   border: 5px solid #fff;
   background: conic-gradient(from 0deg, #ff9999, #99ff99, #9999ff, #ffff99, #ff99ff, #99ffff, #ff9999);
   margin: 0 auto;
   transition: transform 4s cubic-bezier(0.33, 1, 0.68, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 5rem;
+  background-color: #f0f0f0;
+  background-image: none;
 }
 .wheel.spinning {
   transform: rotate(1440deg);
 }
+.wheel-icon {
+  font-size: 6rem;
+}
+
+/* Opties */
 .options {
   display: flex;
   flex-wrap: wrap;
@@ -54,44 +82,57 @@ body {
   margin: 15px 0;
 }
 .option {
-  background: #f0f0f0;
+  background: rgba(255,255,255,0.2);
   padding: 12px;
   border-radius: 8px;
   cursor: pointer;
   flex: 1 1 200px;
   text-align: center;
+  color: white;
+  transition: all 0.2s;
+}
+.option:hover {
+  background: rgba(255,255,255,0.4);
 }
 .option.selected {
   background: #4caf50;
   color: white;
 }
+
+/* Bingo grid - FIX voor grid layout */
 .bingo-grid {
   display: grid;
   gap: 10px;
   justify-content: center;
   margin: 20px auto;
 }
-.grid-3 { grid-template-columns: repeat(3, 100px); }
-.grid-4 { grid-template-columns: repeat(4, 100px); }
-.grid-5 { grid-template-columns: repeat(5, 100px); }
+.grid-3 {
+  grid-template-columns: repeat(3, minmax(80px, 100px));
+}
+.grid-4 {
+  grid-template-columns: repeat(4, minmax(80px, 100px));
+}
+.grid-5 {
+  grid-template-columns: repeat(5, minmax(70px, 90px));
+}
 .bingo-cell {
-  width: 100px;
-  height: 100px;
-  background: white;
+  aspect-ratio: 1 / 1;
+  background: rgba(255,255,255,0.9);
   border-radius: 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: 2.5rem;
+  font-size: 2.2rem;
   box-shadow: 0 2px 5px rgba(0,0,0,0.2);
   cursor: pointer;
   transition: all 0.2s;
   position: relative;
+  color: #333;
 }
 .bingo-cell.streaked {
-  opacity: 0.4;
-  background: #ddd;
+  opacity: 0.5;
+  background: #aaa;
   text-decoration: line-through;
 }
 .bingo-cell.streaked::after {
@@ -105,17 +146,21 @@ body {
 .bingo-cell:hover {
   transform: scale(1.02);
 }
-.game-header {
+
+/* Headers en panels */
+.game-header, .session-info {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: white;
+  background: rgba(255,255,255,0.15);
   padding: 10px 20px;
   border-radius: 15px;
   margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 .players-panel, .claims-panel {
-  background: white;
+  background: rgba(255,255,255,0.15);
   border-radius: 15px;
   padding: 15px;
   margin-top: 20px;
@@ -126,10 +171,21 @@ ul {
   overflow-y: auto;
 }
 li {
-  padding: 5px;
-  border-bottom: 1px solid #eee;
+  padding: 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.2);
+  color: white;
 }
 .error {
-  color: red;
+  color: #ff9999;
   margin-top: 10px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .grid-3, .grid-4, .grid-5 {
+    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+  }
+  .bingo-cell {
+    font-size: 1.5rem;
+  }
 }
