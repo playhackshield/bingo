@@ -32,10 +32,24 @@
         <span>Speler: <strong id="playerNameDisplay"></strong></span>
         <span>🎴 Jokers: <strong id="jokerCount">0</strong></span>
         <button id="bingoBtn" class="btn-bingo">🏆 BINGO!</button>
-      </div>    
-      
+      </div>
+
+      <!-- Vraagweergave -->
+      <div id="studentQuestionArea" style="display:none;" class="question-card">
+        <div class="question-box">
+          <div id="studentQuestionText" class="question-text"></div>
+          <div id="studentOptions" class="options"></div>
+          <button id="submitAnswerBtn" class="btn-primary">Antwoord verzenden</button>
+          <div id="answerFeedback" class="feedback"></div>
+        </div>
+      </div>
+
       <!-- Bingokaart -->
-      <div id="bingoCard" class="bingo-grid"></div>
+      <div class="bingo-card-container">
+        <h3>📋 Jouw Bingokaart</h3>
+        <div id="bingoCard" class="bingo-grid"></div>
+        <p class="hint">Klik op een vakje om het aan of uit te vinken</p>
+      </div>
     </div>
   </div>
 
