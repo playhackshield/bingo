@@ -10,10 +10,17 @@
 <body>
   <div class="container">
     <header>
-      <h1>🎲 HackShield Bingo – Leraar</h1>
-      <button id="logout" class="btn-secondary">Uitloggen</button>
+      <div class="header-left">
+        <h1>🎲 HackShield Bingo – Leraar</h1>
+        <div id="questionCounter" class="question-counter"></div>
+      </div>
+      <div class="header-buttons">
+        <button id="prevQuestionBtn" class="btn-secondary">◀ Vorige</button>
+        <button id="nextQuestionBtn" class="btn-primary">Volgende ▶</button>
+        <button id="endSessionBtn" class="btn-danger">⏹️ Beëindigen</button>
+      </div>
     </header>
-
+    
     <!-- Sessie aanmaken -->
     <div id="setupScreen" class="setup-screen">
       <div class="card">
