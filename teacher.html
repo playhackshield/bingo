@@ -20,7 +20,7 @@
         <button id="endSessionBtn" class="btn-danger">⏹️ Beëindigen</button>
       </div>
     </header>
-    
+
     <!-- Sessie aanmaken -->
     <div id="setupScreen" class="setup-screen">
       <div class="card">
@@ -40,27 +40,22 @@
       <div class="session-info">
         <span>Code: <strong id="sessionCode"></strong></span>
         <span>Spelers: <span id="playerCount">0</span></span>
-
-        <div class="question-nav">
-          <button id="prevQuestionBtn" class="btn btn-secondary">◀ Vorige</button>
-          <button id="nextQuestionBtn" class="btn btn-primary">Volgende ▶</button>
-        </div>
+        <button id="spinBtn" class="btn-primary">🎡 Draai aan het wiel!</button>
       </div>
 
       <!-- Wielanimatie -->
       <div class="wheel-container">
         <div id="wheel" class="wheel"></div>
-        <button id="spinBtn" class="btn-primary">🎡 Draai aan het wiel!</button>
       </div>
 
-      <!-- Huidig onderwerp & vraag -->
+      <!-- Vraag gedeelte -->
       <div id="questionArea" style="display:none;">
         <h2 id="currentSubject"></h2>
         <div id="questionText" class="question-text"></div>
         <div id="options" class="options"></div>
         <div id="feedback"></div>
       </div>
-      
+
       <!-- Lijst van spelers en claims -->
       <div class="players-panel">
         <h3>Deelnemers</h3>
