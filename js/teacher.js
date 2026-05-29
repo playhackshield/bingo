@@ -2,8 +2,9 @@ let currentSessionId = null;
 let currentQuestion = null;
 let currentIcon = null;
 let currentThema = null;
+let currentQuestionIndex = 0;
+let questionsHistory = []; // Geschiedenis van gedraaide vragen
 
-// Voeg toe aan het begin van teacher.js, na de variabele declaraties
 document.addEventListener('DOMContentLoaded', async () => {
   await anonymousLogin();
   
@@ -12,71 +13,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   const sessionIdFromUrl = urlParams.get('sessionId');
   
   if (sessionIdFromUrl) {
-    // Hervat bestaande sessie
     currentSessionId = sessionIdFromUrl;
     await loadExistingSession(sessionIdFromUrl);
   } else {
-    // Normale flow: toon setup scherm
     document.getElementById('setupScreen').style.display = 'block';
     document.getElementById('activeSession').style.display = 'none';
   }
   
-  // Event listeners (zoals eerder)
-  document.getElementById('createSessionBtn').onclick = createSession;
-  // ... rest van event listeners ...
-});
-
-// Nieuwe functie om bestaande sessie te laden
-async function loadExistingSession(sessionId) {
-  try {
-    const sessionDoc = await bingoSessions.doc(sessionId).get();
-    if (!sessionDoc.exists) {
-      alert("Sessie niet gevonden");
-      window.location.href = 'sessions.html';
-      return;
-    }
-    
-    const sessionData = sessionDoc.data();
-    currentSessionId = sessionId;
-    
-    document.getElementById('setupScreen').style.display = 'none';
-    document.getElementById('activeSession').style.display = 'block';
-    document.getElementById('sessionCode').innerText = sessionData.code;
-    
-    // Laad spelers en claims
-    loadPlayers();
-    loadClaims();
-    
-    // Als er een actieve spin is, toon de vraag
-    if (sessionData.currentSpin && sessionData.currentSpin.icon) {
-      showCurrentQuestion(sessionData.currentSpin);
-    }
-    
-    // Luister naar veranderingen
-    bingoSessions.doc(currentSessionId).onSnapshot((doc) => {
-      if (doc.exists) {
-        const data = doc.data();
-        if (data.currentSpin && data.currentSpin.icon) {
-          showCurrentQuestion(data.currentSpin);
-        }
-      }
-    });
-    
-  } catch (error) {
-    console.error("Fout bij laden sessie:", error);
-    alert("Kon sessie niet laden: " + error.message);
-    window.location.href = 'sessions.html';
-  }
-}
-
-document.addEventListener('DOMContentLoaded', async () => {
-  await anonymousLogin();
-  
   // Event listeners
   document.getElementById('createSessionBtn').onclick = createSession;
   document.getElementById('spinBtn').onclick = spinWheel;
-  document.getElementById('revealAnswerBtn').onclick = revealAnswer;
-  document.getElementById('forceNextRound').onclick = forceNextRound;
+  document.getElementById('prevQuestionBtn').onclick = previousQuestion;
+  document.getElementById('nextQuestionBtn').onclick = nextQuestion;
   document.getElementById('logout').onclick = () => auth.signOut().then(() => location.reload());
 });
 
@@ -93,7 +41,8 @@ async function createSession() {
     currentQuestion: null,
     currentIcon: null,
     currentAnswerRevealed: false,
-    correctAnswer: null
+    correctAnswer: null,
+    questionsHistory: []
   };
   
   try {
@@ -104,11 +53,9 @@ async function createSession() {
     document.getElementById('activeSession').style.display = 'block';
     document.getElementById('sessionCode').innerText = code;
     
-    // Laad spelers en claims
     loadPlayers();
     loadClaims();
     
-    // Luister naar sessie veranderingen
     bingoSessions.doc(currentSessionId).onSnapshot((doc) => {
       if (doc.exists) {
         const data = doc.data();
@@ -124,6 +71,47 @@ async function createSession() {
   }
 }
 
+async function loadExistingSession(sessionId) {
+  try {
+    const sessionDoc = await bingoSessions.doc(sessionId).get();
+    if (!sessionDoc.exists) {
+      alert("Sessie niet gevonden");
+      window.location.href = 'sessions.html';
+      return;
+    }
+    
+    const sessionData = sessionDoc.data();
+    currentSessionId = sessionId;
+    questionsHistory = sessionData.questionsHistory || [];
+    currentQuestionIndex = questionsHistory.length;
+    
+    document.getElementById('setupScreen').style.display = 'none';
+    document.getElementById('activeSession').style.display = 'block';
+    document.getElementById('sessionCode').innerText = sessionData.code;
+    
+    loadPlayers();
+    loadClaims();
+    
+    if (sessionData.currentSpin && sessionData.currentSpin.icon) {
+      showCurrentQuestion(sessionData.currentSpin);
+    }
+    
+    bingoSessions.doc(currentSessionId).onSnapshot((doc) => {
+      if (doc.exists) {
+        const data = doc.data();
+        if (data.currentSpin && data.currentSpin.icon) {
+          showCurrentQuestion(data.currentSpin);
+        }
+      }
+    });
+    
+  } catch (error) {
+    console.error("Fout bij laden sessie:", error);
+    alert("Kon sessie niet laden: " + error.message);
+    window.location.href = 'sessions.html';
+  }
+}
+
 async function loadPlayers() {
   bingoPlayers.where('sessionId', '==', currentSessionId).onSnapshot(snapshot => {
     document.getElementById('playerCount').innerText = snapshot.size;
@@ -132,7 +120,7 @@ async function loadPlayers() {
     snapshot.forEach(doc => {
       const p = doc.data();
       const li = document.createElement('li');
-      li.innerText = `${p.name} (goed: ${p.correctCount || 0})`;
+      li.innerText = `${p.name} (jokers: ${p.jokers || 0})`;
       list.appendChild(li);
     });
   });
@@ -146,7 +134,7 @@ async function loadClaims() {
       const claim = doc.data();
       const time = claim.timestamp?.toDate().toLocaleTimeString() || 'nu';
       const li = document.createElement('li');
-      li.innerText = `${claim.name} riep BINGO! om ${time}`;
+      li.innerText = `${claim.name} riep BINGO! (jokers: ${claim.jokersUsed || 0}) om ${time}`;
       list.appendChild(li);
     });
   });
@@ -154,21 +142,23 @@ async function loadClaims() {
 
 async function spinWheel() {
   const wheel = document.getElementById('wheel');
-  if (!wheel) {
-    console.error("Wiel element niet gevonden!");
-    return;
-  }
+  if (!wheel) return;
   
-  // Wis eventuele bestaande inhoud
-  wheel.innerHTML = '';
+  // Toon aftel animatie
+  wheel.innerHTML = '<div class="wheel-countdown">3</div>';
   wheel.classList.add('spinning');
   
+  // Aftel animatie
+  for (let i = 3; i >= 1; i--) {
+    await new Promise(resolve => setTimeout(resolve, 800));
+    wheel.innerHTML = `<div class="wheel-countdown">${i}</div>`;
+  }
+  
   try {
-    // Laad alle beschikbare iconen uit vragen.json
+    // Laad alle beschikbare iconen
     const res = await fetch('data/vragen.json');
     const allQuestions = await res.json();
     
-    // Maak lijst van alle iconen (plat)
     let allIcons = [];
     allQuestions.forEach(q => {
       q.iconen.forEach(icon => {
@@ -186,35 +176,42 @@ async function spinWheel() {
       correct: selected.correct
     };
     
-    // Wacht tot animatie klaar is (4s)
-    setTimeout(async () => {
-      wheel.classList.remove('spinning');
-      // Toon het gekozen icoon groot in het wiel
-      wheel.innerHTML = `<div class="wheel-icon" style="font-size: 6rem;">${currentIcon}</div>`;
-      
-      // Update Firestore sessie met gedraaid onderwerp
-      await bingoSessions.doc(currentSessionId).update({
-        currentSpin: {
-          icon: currentIcon,
-          thema: currentThema,
-          vraag: currentQuestion.vraag,
-          opties: currentQuestion.opties,
-          correct: currentQuestion.correct
-        }
-      });
-      
-      // Toon vraag gedeelte
-      showCurrentQuestion({
+    // Bewaar in geschiedenis
+    questionsHistory.push({
+      icon: currentIcon,
+      thema: currentThema,
+      vraag: currentQuestion.vraag,
+      opties: currentQuestion.opties,
+      correct: currentQuestion.correct,
+      timestamp: new Date().toISOString()
+    });
+    currentQuestionIndex = questionsHistory.length;
+    
+    wheel.classList.remove('spinning');
+    wheel.innerHTML = `<div class="wheel-icon" style="font-size: 6rem;">${currentIcon}</div>`;
+    
+    await bingoSessions.doc(currentSessionId).update({
+      currentSpin: {
         icon: currentIcon,
         thema: currentThema,
         vraag: currentQuestion.vraag,
-        opties: currentQuestion.opties
-      });
-    }, 4000);
+        opties: currentQuestion.opties,
+        correct: currentQuestion.correct
+      },
+      questionsHistory: questionsHistory
+    });
+    
+    showCurrentQuestion({
+      icon: currentIcon,
+      thema: currentThema,
+      vraag: currentQuestion.vraag,
+      opties: currentQuestion.opties
+    });
     
   } catch (error) {
     console.error("Fout bij spinWheel:", error);
     wheel.classList.remove('spinning');
+    wheel.innerHTML = '<div class="wheel-icon">❌</div>';
     alert("Fout bij laden vragen: " + error.message);
   }
 }
@@ -246,33 +243,100 @@ function showCurrentQuestion(spinData) {
 async function revealAnswer() {
   const selectedOption = document.querySelector('#options .option.selected');
   const correctIndex = currentQuestion.correct;
-  const correctText = currentQuestion.opties[correctIndex];
   
-  // Highlight juiste antwoord
+  // Highlight juiste antwoord (groen)
   document.querySelectorAll('#options .option').forEach((opt, idx) => {
     if (idx === correctIndex) {
       opt.style.background = '#4caf50';
       opt.style.color = 'white';
     } else {
-      opt.style.background = 'rgba(255,255,255,0.2)';
+      opt.style.background = '#f0f0f0';
+      opt.style.color = '#333';
     }
   });
   
-  // Toon feedback
   const feedback = document.getElementById('feedback');
   if (selectedOption && parseInt(selectedOption.dataset.idx) === correctIndex) {
-    feedback.innerHTML = '<span style="color:#a5d6a7;">✅ Juist! Leerlingen mogen nu het icoon wegstrepen.</span>';
+    feedback.innerHTML = '<span style="color:#4caf50;">✅ Juist! Leerlingen kunnen vakjes wegstrepen.</span>';
   } else {
-    feedback.innerHTML = '<span style="color:#ffcdd2;">❌ Fout! Het juiste antwoord is hierboven gemarkeerd. Leerlingen mogen deze ronde geen vakje wegstrepen.</span>';
+    feedback.innerHTML = `<span style="color:#f44336;">❌ Fout! Het juiste antwoord is: ${currentQuestion.opties[correctIndex]}</span>`;
   }
   
-  // Update Firestore dat antwoord is onthuld
   await bingoSessions.doc(currentSessionId).update({
     currentAnswerRevealed: true,
     correctAnswer: correctIndex
   });
   
   document.getElementById('revealAnswerBtn').disabled = true;
+}
+
+async function previousQuestion() {
+  if (currentQuestionIndex <= 1) {
+    alert("Dit is de eerste vraag, er is geen vorige vraag.");
+    return;
+  }
+  
+  // Ga naar vorige vraag in geschiedenis
+  currentQuestionIndex--;
+  const prevSpin = questionsHistory[currentQuestionIndex - 1];
+  
+  if (prevSpin) {
+    currentIcon = prevSpin.icon;
+    currentThema = prevSpin.thema;
+    currentQuestion = {
+      vraag: prevSpin.vraag,
+      opties: prevSpin.opties,
+      correct: prevSpin.correct
+    };
+    
+    await bingoSessions.doc(currentSessionId).update({
+      currentSpin: {
+        icon: currentIcon,
+        thema: currentThema,
+        vraag: currentQuestion.vraag,
+        opties: currentQuestion.opties,
+        correct: currentQuestion.correct
+      },
+      currentAnswerRevealed: false,
+      correctAnswer: null
+    });
+    
+    const wheel = document.getElementById('wheel');
+    if (wheel) wheel.innerHTML = `<div class="wheel-icon" style="font-size: 6rem;">${currentIcon}</div>`;
+    
+    showCurrentQuestion({
+      icon: currentIcon,
+      thema: currentThema,
+      vraag: currentQuestion.vraag,
+      opties: currentQuestion.opties
+    });
+  }
+}
+
+async function nextQuestion() {
+  // Dit is de "Volgende ronde" functionaliteit
+  document.getElementById('questionArea').style.display = 'none';
+  document.getElementById('revealAnswerBtn').disabled = false;
+  document.getElementById('feedback').innerHTML = '';
+  
+  // Reset wiel (leegmaken voor volgende ronde)
+  const wheel = document.getElementById('wheel');
+  if (wheel) {
+    wheel.innerHTML = '';
+    wheel.classList.remove('spinning');
+  }
+  
+  await bingoSessions.doc(currentSessionId).update({
+    currentSpin: null,
+    currentAnswerRevealed: false,
+    correctAnswer: null
+  });
+  
+  currentQuestion = null;
+  currentIcon = null;
+  currentThema = null;
+  
+  console.log("Klaar voor volgende ronde. Draai opnieuw!");
 }
 
 function resetWheel() {
@@ -282,31 +346,4 @@ function resetWheel() {
     wheel.style.transform = 'rotate(0deg)';
     wheel.classList.remove('spinning');
   }
-}
-
-async function forceNextRound() {
-  console.log("Forceer volgende ronde...");
-  
-  // Reset vraag area en wiel
-  document.getElementById('questionArea').style.display = 'none';
-  document.getElementById('revealAnswerBtn').disabled = false;
-  document.getElementById('feedback').innerHTML = '';
-  document.getElementById('revealAnswerBtn').style.display = 'inline-block';
-  
-  // Reset het wiel (verwijder het icoon)
-  resetWheel();
-  
-  // Reset de huidige spin data in Firestore (zodat studenten weten dat er geen actieve vraag is)
-  await bingoSessions.doc(currentSessionId).update({
-    currentSpin: null,
-    currentAnswerRevealed: false,
-    correctAnswer: null
-  });
-  
-  // Verwijder de opgeslagen huidige vraag uit de lokale variabelen
-  currentQuestion = null;
-  currentIcon = null;
-  currentThema = null;
-  
-  console.log("Klaar voor volgende ronde. Je kunt opnieuw draaien.");
 }
