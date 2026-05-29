@@ -516,6 +516,7 @@ header {
 
 
 /* Geschiedenis panel */
+/* Geschiedenis panel */
 .history-panel {
   background: rgba(255,255,255,0.1);
   border-radius: 15px;
@@ -532,11 +533,34 @@ header {
 
 .history-list {
   display: flex;
+  flex-direction: row;
   flex-wrap: wrap;
   gap: 12px;
-  max-height: 150px;
-  overflow-y: auto;
-  padding: 5px;
+  align-items: center;
+  max-height: 120px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 10px 5px;
+  white-space: nowrap;
+}
+
+/* Scrollbar styling voor history */
+.history-list::-webkit-scrollbar {
+  height: 6px;
+}
+
+.history-list::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.1);
+  border-radius: 3px;
+}
+
+.history-list::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.3);
+  border-radius: 3px;
+}
+
+.history-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.5);
 }
 
 .empty-history {
@@ -544,58 +568,55 @@ header {
   text-align: center;
   padding: 20px;
   font-style: italic;
+  width: 100%;
 }
 
 .history-item {
-  display: flex;
+  display: inline-flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
+  gap: 5px;
   background: rgba(255,255,255,0.15);
-  padding: 8px 15px;
-  border-radius: 40px;
+  padding: 10px 15px;
+  border-radius: 12px;
   cursor: pointer;
   transition: all 0.2s;
+  min-width: 70px;
 }
 
 .history-item:hover {
   background: rgba(255,255,255,0.3);
-  transform: scale(1.05);
+  transform: translateY(-3px);
 }
 
 .history-icon {
-  font-size: 1.5rem;
-}
-
-.history-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.history-thema {
-  font-size: 0.85rem;
-  font-weight: bold;
+  font-size: 2.5rem;
 }
 
 .history-number {
   font-size: 0.7rem;
-  color: rgba(255,255,255,0.6);
+  color: rgba(255,255,255,0.7);
+  font-weight: bold;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
   .history-list {
     max-height: 100px;
+    gap: 8px;
   }
   
   .history-item {
-    padding: 5px 12px;
+    padding: 6px 10px;
+    min-width: 55px;
   }
   
   .history-icon {
-    font-size: 1.2rem;
+    font-size: 1.8rem;
   }
   
-  .history-thema {
-    font-size: 0.75rem;
+  .history-number {
+    font-size: 0.6rem;
   }
 }
