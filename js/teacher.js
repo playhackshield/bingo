@@ -285,6 +285,8 @@ function resetWheel() {
 }
 
 async function forceNextRound() {
+  console.log("Forceer volgende ronde...");
+  
   // Reset vraag area en wiel
   document.getElementById('questionArea').style.display = 'none';
   document.getElementById('revealAnswerBtn').disabled = false;
@@ -294,15 +296,17 @@ async function forceNextRound() {
   // Reset het wiel (verwijder het icoon)
   resetWheel();
   
-  try {
-    // Verwijder huidige spin uit Firestore
-    await bingoSessions.doc(currentSessionId).update({
-      currentSpin: null,
-      currentAnswerRevealed: false,
-      correctAnswer: null
-    });
-    console.log("Volgende ronde geforceerd");
-  } catch (error) {
-    console.error("Fout bij forceNextRound:", error);
-  }
+  // Reset de huidige spin data in Firestore (zodat studenten weten dat er geen actieve vraag is)
+  await bingoSessions.doc(currentSessionId).update({
+    currentSpin: null,
+    currentAnswerRevealed: false,
+    correctAnswer: null
+  });
+  
+  // Verwijder de opgeslagen huidige vraag uit de lokale variabelen
+  currentQuestion = null;
+  currentIcon = null;
+  currentThema = null;
+  
+  console.log("Klaar voor volgende ronde. Je kunt opnieuw draaien.");
 }
