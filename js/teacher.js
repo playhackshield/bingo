@@ -233,38 +233,6 @@ function showCurrentQuestion(spinData) {
   });
   
   document.getElementById('feedback').innerHTML = '';
-  document.getElementById('revealAnswerBtn').disabled = false;
-  document.getElementById('revealAnswerBtn').style.display = 'inline-block';
-}
-
-async function revealAnswer() {
-  const selectedOption = document.querySelector('#options .option.selected');
-  const correctIndex = currentQuestion.correct;
-  
-  // Highlight juiste antwoord (groen)
-  document.querySelectorAll('#options .option').forEach((opt, idx) => {
-    if (idx === correctIndex) {
-      opt.style.background = '#4caf50';
-      opt.style.color = 'white';
-    } else {
-      opt.style.background = '#f0f0f0';
-      opt.style.color = '#333';
-    }
-  });
-  
-  const feedback = document.getElementById('feedback');
-  if (selectedOption && parseInt(selectedOption.dataset.idx) === correctIndex) {
-    feedback.innerHTML = '<span style="color:#4caf50;">✅ Juist! Leerlingen kunnen vakjes wegstrepen.</span>';
-  } else {
-    feedback.innerHTML = `<span style="color:#f44336;">❌ Fout! Het juiste antwoord is: ${currentQuestion.opties[correctIndex]}</span>`;
-  }
-  
-  await bingoSessions.doc(currentSessionId).update({
-    currentAnswerRevealed: true,
-    correctAnswer: correctIndex
-  });
-  
-  document.getElementById('revealAnswerBtn').disabled = true;
 }
 
 async function previousQuestion() {
@@ -313,7 +281,6 @@ async function previousQuestion() {
 async function nextQuestion() {
   // Dit is de "Volgende ronde" functionaliteit
   document.getElementById('questionArea').style.display = 'none';
-  document.getElementById('revealAnswerBtn').disabled = false;
   document.getElementById('feedback').innerHTML = '';
   
   // Reset wiel (leegmaken voor volgende ronde)
