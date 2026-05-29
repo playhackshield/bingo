@@ -1,18 +1,42 @@
 // Sessiebeheer logica
 let currentTeacherId = null;
+let currentUser = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
   try {
-    await anonymousLogin();
-    currentTeacherId = auth.currentUser.uid;
-    
-    // Event listeners
-    document.getElementById('createSessionBtn').onclick = createNewSession;
-    document.getElementById('logoutBtn').onclick = () => auth.signOut().then(() => location.href = 'index.html');
-    
-    // Laad sessies
-    loadActiveSessions();
-    loadEndedSessions();
+    // Wacht op Firebase auth state
+    firebase.auth().onAuthStateChanged(async (user) => {
+      if (!user) {
+        // Niet ingelogd, redirect naar login
+        console.log("Geen gebruiker ingelogd, redirect naar login");
+        window.location.href = 'index.html';
+        return;
+      }
+      
+      // Check of het een anonieme gebruiker is (die mag niet hier komen)
+      if (user.isAnonymous) {
+        console.log("Anonieme gebruiker, redirect naar login");
+        window.location.href = 'index.html';
+        return;
+      }
+      
+      // Echte ingelogde gebruiker
+      currentUser = user;
+      currentTeacherId = user.uid;
+      console.log("Ingelogd als:", user.email);
+      
+      // Event listeners
+      document.getElementById('createSessionBtn').onclick = createNewSession;
+      document.getElementById('logoutBtn').onclick = () => {
+        firebase.auth().signOut().then(() => {
+          window.location.href = 'index.html';
+        });
+      };
+      
+      // Laad sessies
+      loadActiveSessions();
+      loadEndedSessions();
+    });
     
   } catch (error) {
     console.error("Initialisatie fout:", error);
@@ -41,10 +65,7 @@ async function createNewSession() {
     const docRef = await bingoSessions.add(sessionData);
     console.log("Sessie aangemaakt:", docRef.id, "Code:", code);
     
-    // Toon succesmelding
     alert(`✅ Sessie aangemaakt!\nCode: ${code}\nKlik OK om naar de leraarpagina te gaan.`);
-    
-    // Ga naar de leraarpagina met de sessie ID
     window.location.href = `teacher.html?sessionId=${docRef.id}`;
     
   } catch (error) {
@@ -97,7 +118,6 @@ async function loadActiveSessions() {
       container.appendChild(sessionCard);
     });
     
-    // Event listeners voor knoppen
     document.querySelectorAll('.resume-session').forEach(btn => {
       btn.onclick = () => resumeSession(btn.dataset.id);
     });
@@ -157,7 +177,6 @@ async function loadEndedSessions() {
       container.appendChild(sessionCard);
     });
     
-    // Event listeners voor archief knoppen
     document.querySelectorAll('.view-session').forEach(btn => {
       btn.onclick = () => viewSession(btn.dataset.id);
     });
@@ -172,7 +191,6 @@ async function loadEndedSessions() {
 }
 
 async function resumeSession(sessionId) {
-  // Ga naar teacher.html met de sessie ID
   window.location.href = `teacher.html?sessionId=${sessionId}`;
 }
 
@@ -196,7 +214,6 @@ async function endSession(sessionId) {
 }
 
 async function viewSession(sessionId) {
-  // Ga naar een rapportage pagina (optioneel, kan later toegevoegd worden)
   window.location.href = `teacher.html?sessionId=${sessionId}&readonly=true`;
 }
 
@@ -206,23 +223,20 @@ async function deleteSession(sessionId) {
   }
   
   try {
-    // Verwijder alle spelers van deze sessie
     const playersSnapshot = await bingoPlayers.where('sessionId', '==', sessionId).get();
     const batch = db.batch();
     playersSnapshot.forEach(doc => {
       batch.delete(doc.ref);
     });
     
-    // Verwijder alle claims van deze sessie
     const claimsSnapshot = await bingoClaims.where('sessionId', '==', sessionId).get();
     claimsSnapshot.forEach(doc => {
       batch.delete(doc.ref);
     });
     
-    // Verwijder de sessie zelf
     batch.delete(bingoSessions.doc(sessionId));
-    
     await batch.commit();
+    
     alert("Sessie en alle bijbehorende data verwijderd");
     loadActiveSessions();
     loadEndedSessions();
