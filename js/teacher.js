@@ -221,12 +221,46 @@ async function spinWheel() {
   const wheel = document.getElementById('wheel');
   if (!wheel) return;
   
-  // Controleer of er nog ongebruikte iconen zijn
-  const allAvailableIcons = getAllAvailableIcons();
-  const usedIcons = questionsHistory.map(item => `${item.icon}_${item.thema}`);
-  const remainingIcons = allAvailableIcons.filter(icon => 
-    !usedIcons.includes(`${icon.icon}_${icon.thema}`)
-  );
+  console.log("=== SPIN WHEEL DEBUG ===");
+  console.log("QuestionsHistory lengte:", questionsHistory.length);
+  console.log("QuestionsHistory inhoud:", questionsHistory.map(i => `${i.icon}_${i.thema}`));
+  
+  // Haal alle beschikbare iconen op
+  let allAvailableIcons = [];
+  try {
+    const res = await fetch('data/vragen.json');
+    const allQuestions = await res.json();
+    
+    allQuestions.forEach(q => {
+      q.iconen.forEach(icon => {
+        allAvailableIcons.push({
+          icon: icon,
+          thema: q.thema,
+          vraag: q.vraag,
+          opties: q.opties,
+          correct: q.correct
+        });
+      });
+    });
+  } catch (error) {
+    console.error("Fout bij laden iconen:", error);
+    alert("Fout bij laden vragen: " + error.message);
+    return;
+  }
+  
+  console.log("Totaal beschikbare iconen:", allAvailableIcons.length);
+  
+  // Bepaal welke iconen al gebruikt zijn
+  const usedKeys = questionsHistory.map(item => `${item.icon}_${item.thema}`);
+  console.log("Gebruikte iconen:", usedKeys);
+  
+  // Filter de niet-gebruikte iconen
+  const remainingIcons = allAvailableIcons.filter(icon => {
+    const key = `${icon.icon}_${icon.thema}`;
+    return !usedKeys.includes(key);
+  });
+  
+  console.log("Resterende iconen:", remainingIcons.length);
   
   if (remainingIcons.length === 0) {
     alert("Alle vragen zijn geweest! Er is geen nieuwe vraag meer beschikbaar.");
@@ -240,9 +274,10 @@ async function spinWheel() {
   await new Promise(resolve => setTimeout(resolve, 2000));
   
   try {
-    // Kies willekeurig uit de resterende iconen
     const randomIndex = Math.floor(Math.random() * remainingIcons.length);
     const selected = remainingIcons[randomIndex];
+    
+    console.log("Gekozen icoon:", selected.icon, selected.thema);
     
     currentIcon = selected.icon;
     currentThema = selected.thema;
@@ -290,7 +325,7 @@ async function spinWheel() {
     console.error("Fout bij spinWheel:", error);
     wheel.classList.remove('spinning');
     wheel.innerHTML = '<i class="fas fa-cog wheel-icon-default"></i>';
-    alert("Fout bij laden vragen: " + error.message);
+    alert("Fout: " + error.message);
   }
 }
 
