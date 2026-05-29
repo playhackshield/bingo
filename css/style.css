@@ -49,29 +49,45 @@ body {
 /* Wiel container */
 .wheel-container {
   text-align: center;
-  margin: 20px;
-  position: relative;
+  margin: 20px auto;
+  cursor: pointer;
 }
+
 .wheel {
-  width: 250px;
-  height: 250px;
+  width: 150px;
+  height: 150px;
   border-radius: 50%;
-  border: 5px solid #fff;
-  background: conic-gradient(from 0deg, #ff9999, #99ff99, #9999ff, #ffff99, #ff99ff, #99ffff, #ff9999);
+  background: rgba(255,255,255,0.15);
+  border: 5px solid rgba(255,255,255,0.3);
   margin: 0 auto;
-  transition: transform 4s cubic-bezier(0.33, 1, 0.68, 1);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 5rem;
-  background-color: #f0f0f0;
-  background-image: none;
+  transition: all 0.2s;
+  cursor: pointer;
 }
-.wheel.spinning {
-  transform: rotate(1440deg);
+
+.wheel:hover {
+  background: rgba(255,255,255,0.25);
+  transform: scale(1.02);
 }
+
 .wheel-icon {
-  font-size: 6rem;
+  font-size: 5rem;
+}
+
+.wheel-icon-default {
+  font-size: 4rem;
+  color: rgba(255,255,255,0.8);
+}
+
+.wheel.spinning {
+  animation: spin 0.5s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* Opties naast elkaar - FIXED */
@@ -193,6 +209,9 @@ body {
   padding: 15px;
   margin-top: 20px;
 }
+.players-panel h3 {
+  margin-bottom: 10px;
+}
 ul {
   list-style: none;
   max-height: 200px;
@@ -304,13 +323,9 @@ header {
   flex-wrap: wrap;
   gap: 15px;
   margin-bottom: 20px;
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  flex-wrap: wrap;
+  background: rgba(255,255,255,0.1);
+  padding: 15px 20px;
+  border-radius: 15px;
 }
 
 .header-buttons {
@@ -516,7 +531,6 @@ header {
 
 
 /* Geschiedenis panel */
-/* Geschiedenis panel */
 .history-panel {
   background: rgba(255,255,255,0.1);
   border-radius: 15px;
@@ -537,11 +551,31 @@ header {
   flex-wrap: wrap;
   gap: 12px;
   align-items: center;
-  max-height: 120px;
-  overflow-x: auto;
-  overflow-y: hidden;
   padding: 10px 5px;
-  white-space: nowrap;
+}
+
+.history-item {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  background: rgba(255,255,255,0.15);
+  padding: 10px 15px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 70px;
+}
+
+.history-icon {
+  font-size: 2.5rem;
+}
+
+.history-number {
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.7);
+  font-weight: bold;
 }
 
 /* Scrollbar styling voor history */
@@ -571,33 +605,9 @@ header {
   width: 100%;
 }
 
-.history-item {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  background: rgba(255,255,255,0.15);
-  padding: 10px 15px;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.2s;
-  min-width: 70px;
-}
-
 .history-item:hover {
   background: rgba(255,255,255,0.3);
   transform: translateY(-3px);
-}
-
-.history-icon {
-  font-size: 2.5rem;
-}
-
-.history-number {
-  font-size: 0.7rem;
-  color: rgba(255,255,255,0.7);
-  font-weight: bold;
 }
 
 /* Responsive */
@@ -620,3 +630,11 @@ header {
     font-size: 0.6rem;
   }
 }
+
+/* Vraag titel */
+#currentSubject {
+  font-size: 1.4rem;
+  text-align: center;
+  margin: 15px 0;
+}
+
