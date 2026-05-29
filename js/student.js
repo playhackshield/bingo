@@ -4,8 +4,8 @@ let currentSpin = null;
 let bingoCard = [];
 let gridSize = 0;
 let allQuestions = [];
-let correctStreak = 0;     // Teller voor goede antwoorden (0-3)
-let jokers = 0;            // Aantal verzamelde jokers
+let correctStreak = 0;
+let jokers = 0;
 
 document.addEventListener('DOMContentLoaded', async () => {
   await anonymousLogin();
@@ -84,23 +84,22 @@ async function joinSession() {
   bingoCard = card;
   renderBingoCard();
 
-  // Luister naar sessie updates (voor vragen)
+  // 🔥 BELANGRIJK: Luister naar sessie updates (voor nieuwe vragen)
   bingoSessions.doc(currentSession.id).onSnapshot((doc) => {
     const data = doc.data();
+    console.log("Sessie update ontvangen:", data);
+    
     if (data.currentSpin && data.currentSpin.icon) {
+      // Nieuwe vraag ontvangen!
       currentSpin = data.currentSpin;
       showStudentQuestion(data.currentSpin);
     } else {
+      // Geen actieve vraag, verberg vraag gebied
       document.getElementById('studentQuestionArea').style.display = 'none';
-    }
-    
-    // Als antwoord is onthuld door leraar, geef feedback
-    if (data.currentAnswerRevealed && currentSpin) {
-      // Feedback wordt al gegeven bij submitAnswer, maar we kunnen het hier ook tonen
     }
   });
 
-  // Luister naar eigen player updates
+  // Luister naar eigen player updates (voor jokers en kaart)
   bingoPlayers.doc(currentPlayer.id).onSnapshot((doc) => {
     if (doc.exists) {
       const updated = doc.data();
@@ -116,12 +115,15 @@ async function joinSession() {
 }
 
 function showStudentQuestion(spin) {
+  console.log("Toon vraag voor student:", spin.thema);
+  
   document.getElementById('studentQuestionArea').style.display = 'block';
   document.getElementById('studentQuestionText').innerHTML = `
-    <span style="font-size:2rem;">${spin.icon}</span>
-    ${spin.thema}<br>
+    <span style="font-size:2rem;">${spin.icon}</span><br>
+    <strong>${spin.thema}</strong><br><br>
     ${spin.vraag}
   `;
+  
   const optionsDiv = document.getElementById('studentOptions');
   optionsDiv.innerHTML = '';
   spin.opties.forEach((opt, idx) => {
@@ -135,11 +137,17 @@ function showStudentQuestion(spin) {
     };
     optionsDiv.appendChild(btn);
   });
+  
   document.getElementById('submitAnswerBtn').disabled = false;
   document.getElementById('answerFeedback').innerHTML = '';
 }
 
 async function submitAnswer() {
+  if (!currentSpin) {
+    document.getElementById('answerFeedback').innerHTML = '<span style="color:#ffcdd2;">Er is geen actieve vraag.</span>';
+    return;
+  }
+  
   const selected = document.querySelector('#studentOptions .option.selected');
   if (!selected) {
     document.getElementById('answerFeedback').innerHTML = '<span style="color:#ffcdd2;">Kies een antwoord.</span>';
@@ -150,13 +158,10 @@ async function submitAnswer() {
   const isCorrect = (answerIndex === currentSpin.correct);
   
   if (isCorrect) {
-    // Goed antwoord: verhoog teller
     correctStreak++;
     let newJokers = jokers;
-    let newCorrectCount = currentPlayer.correctCount;
     
     if (correctStreak === 3) {
-      // Joker verdienen!
       newJokers++;
       correctStreak = 0;
       document.getElementById('answerFeedback').innerHTML = '<span style="color:#a5d6a7;">🎉 Goed! Je hebt een JOKER verdiend!</span>';
@@ -164,22 +169,19 @@ async function submitAnswer() {
       document.getElementById('answerFeedback').innerHTML = '<span style="color:#a5d6a7;">✅ Goed antwoord!</span>';
     }
     
-    newCorrectCount++;
-    
-    // Update Firebase
+    // Update jokers in Firebase
     await bingoPlayers.doc(currentPlayer.id).update({
-      correctCount: newCorrectCount,
       jokers: newJokers
     });
+    jokers = newJokers;
+    updateJokerDisplay();
     
   } else {
-    // Fout antwoord: reset streak
     correctStreak = 0;
-    document.getElementById('answerFeedback').innerHTML = '<span style="color:#ffcdd2;">❌ Fout! Het juiste antwoord is: ' + currentSpin.opties[currentSpin.correct] + '</span>';
+    document.getElementById('answerFeedback').innerHTML = `<span style="color:#ffcdd2;">❌ Fout! Het juiste antwoord is: ${currentSpin.opties[currentSpin.correct]}</span>`;
   }
   
   document.getElementById('submitAnswerBtn').disabled = true;
-  updateJokerDisplay();
 }
 
 function updateJokerDisplay() {
@@ -204,7 +206,6 @@ function renderBingoCard() {
     div.className = `bingo-cell ${cell.streaked ? 'streaked' : ''}`;
     div.innerHTML = cell.icon;
     
-    // Vrij aan/uitvinken
     div.onclick = () => {
       bingoCard[idx].streaked = !cell.streaked;
       renderBingoCard();
@@ -221,7 +222,6 @@ async function claimBingo() {
     return;
   }
   
-  // Controleer of er een bingo is (met jokers)
   const result = checkBingoWithJokers();
   
   if (!result.isBingo) {
@@ -229,7 +229,6 @@ async function claimBingo() {
     return;
   }
   
-  // Bingo geclaimd!
   await bingoClaims.add({
     sessionId: currentSession.id,
     playerId: currentPlayer.id,
@@ -251,7 +250,7 @@ function checkBingoWithJokers() {
   let bestMissing = 999;
   let bestJokersUsed = 0;
   
-  // Check alle rijen
+  // Check rijen
   for (let r = 0; r < size; r++) {
     const missing = grid[r].filter(cell => !cell.streaked).length;
     if (missing <= jokers && missing < bestMissing) {
@@ -260,7 +259,7 @@ function checkBingoWithJokers() {
     }
   }
   
-  // Check alle kolommen
+  // Check kolommen
   for (let c = 0; c < size; c++) {
     let missing = 0;
     for (let r = 0; r < size; r++) {
@@ -272,7 +271,7 @@ function checkBingoWithJokers() {
     }
   }
   
-  // Check diagonaal 1
+  // Diagonaal 1
   let missing1 = 0;
   for (let i = 0; i < size; i++) {
     if (!grid[i][i].streaked) missing1++;
@@ -282,7 +281,7 @@ function checkBingoWithJokers() {
     bestJokersUsed = missing1;
   }
   
-  // Check diagonaal 2
+  // Diagonaal 2
   let missing2 = 0;
   for (let i = 0; i < size; i++) {
     if (!grid[i][size - 1 - i].streaked) missing2++;
