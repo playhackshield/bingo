@@ -4,35 +4,52 @@ let currentIcon = null;
 let currentThema = null;
 let currentQuestionIndex = 0;
 let questionsHistory = [];
+let currentUser = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
-  await anonymousLogin();
-  
-  const urlParams = new URLSearchParams(window.location.search);
-  const sessionIdFromUrl = urlParams.get('sessionId');
-  
-  if (sessionIdFromUrl) {
-    currentSessionId = sessionIdFromUrl;
-    await loadExistingSession(sessionIdFromUrl);
-  } else {
-    const setupScreen = document.getElementById('setupScreen');
-    const activeSession = document.getElementById('activeSession');
-    if (setupScreen) setupScreen.style.display = 'block';
-    if (activeSession) activeSession.style.display = 'none';
-  }
-  
-  // Event listeners
-  const createBtn = document.getElementById('createSessionBtn');
-  const prevBtn = document.getElementById('prevQuestionBtn');
-  const nextBtn = document.getElementById('nextQuestionBtn');
-  const endBtn = document.getElementById('endSessionBtn');
-  const wheel = document.getElementById('wheel');
-  
-  if (createBtn) createBtn.onclick = createSession;
-  if (prevBtn) prevBtn.onclick = previousQuestion;
-  if (nextBtn) nextBtn.onclick = nextQuestion;
-  if (endBtn) endBtn.onclick = endSession;
-  if (wheel) wheel.onclick = spinWheel;
+  // Wacht op Firebase auth state
+  firebase.auth().onAuthStateChanged(async (user) => {
+    if (!user) {
+      console.log("Geen gebruiker ingelogd, redirect naar login");
+      window.location.href = 'index.html';
+      return;
+    }
+    
+    if (user.isAnonymous) {
+      console.log("Anonieme gebruiker, redirect naar login");
+      window.location.href = 'index.html';
+      return;
+    }
+    
+    currentUser = user;
+    console.log("Ingelogd als:", user.email);
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionIdFromUrl = urlParams.get('sessionId');
+    
+    if (sessionIdFromUrl) {
+      currentSessionId = sessionIdFromUrl;
+      await loadExistingSession(sessionIdFromUrl);
+    } else {
+      const setupScreen = document.getElementById('setupScreen');
+      const activeSession = document.getElementById('activeSession');
+      if (setupScreen) setupScreen.style.display = 'block';
+      if (activeSession) activeSession.style.display = 'none';
+    }
+    
+    // Event listeners
+    const createBtn = document.getElementById('createSessionBtn');
+    const prevBtn = document.getElementById('prevQuestionBtn');
+    const nextBtn = document.getElementById('nextQuestionBtn');
+    const endBtn = document.getElementById('endSessionBtn');
+    const wheel = document.getElementById('wheel');
+    
+    if (createBtn) createBtn.onclick = createSession;
+    if (prevBtn) prevBtn.onclick = previousQuestion;
+    if (nextBtn) nextBtn.onclick = nextQuestion;
+    if (endBtn) endBtn.onclick = endSession;
+    if (wheel) wheel.onclick = spinWheel;
+  });
 });
 
 async function createSession() {
@@ -43,6 +60,7 @@ async function createSession() {
     code: code,
     gridSize: gridSize,
     active: true,
+    teacherId: currentUser.uid,
     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
     currentSpin: null,
     currentQuestion: null,
@@ -132,7 +150,6 @@ async function loadExistingSession(sessionId) {
 function updateQuestionCounter() {
   const counterDiv = document.getElementById('currentSubject');
   if (counterDiv && currentThema && currentQuestionIndex > 0) {
-    // Alleen "Vraag X: Onderwerp" zonder "van Y"
     counterDiv.innerHTML = `Vraag ${currentQuestionIndex}: ${currentThema}`;
   } else if (counterDiv && questionsHistory.length === 0) {
     counterDiv.innerHTML = 'Nog geen vragen gedraaid';
@@ -176,7 +193,6 @@ async function spinWheel() {
   const wheel = document.getElementById('wheel');
   if (!wheel) return;
   
-  // Toon draaiende animatie met icoon
   wheel.innerHTML = '<i class="fas fa-cog fa-spin wheel-icon-default" style="font-size: 4rem;"></i>';
   wheel.classList.add('spinning');
   
@@ -247,10 +263,8 @@ async function spinWheel() {
 
 function showCurrentQuestion(spinData) {
   document.getElementById('questionArea').style.display = 'block';
-  // Alleen de vraag tekst (titel staat al in currentSubject)
   document.getElementById('questionText').innerHTML = spinData.vraag;
   
-  // Update de titel ook met de juiste vraagnummer
   if (currentQuestionIndex > 0) {
     document.getElementById('currentSubject').innerHTML = `Vraag ${currentQuestionIndex}: ${spinData.thema}`;
   } else {
