@@ -609,28 +609,15 @@ header {
   overflow-y: visible;
 }
 
-/* Scrollbar alleen horizontaal indien nodig, verticaal nooit scrollen */
-@media (max-width: 768px) {
-  .history-list {
-    max-height: none;
-    overflow-x: auto;
-    overflow-y: visible;
-  }
-}
-
 .history-item {
   display: inline-flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 5px;
   background: rgba(255,255,255,0.15);
-  padding: 10px 15px;
+  padding: 8px 12px;
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.2s;
-  min-width: 70px;
-  flex-shrink: 0;
 }
 
 .history-item:hover {
@@ -639,13 +626,12 @@ header {
 }
 
 .history-icon {
-  font-size: 2.5rem;
+  font-size: 1.8rem;  /* Icoon kleiner gemaakt */
 }
 
+/* Verwijder de .history-number styling (of verberg het cijfer) */
 .history-number {
-  font-size: 0.7rem;
-  color: rgba(255,255,255,0.7);
-  font-weight: bold;
+  display: none;
 }
 
 .empty-history {
@@ -656,7 +642,7 @@ header {
   width: 100%;
 }
 
-/* Horizontale scroll alleen op mobiel */
+/* Responsive */
 @media (max-width: 768px) {
   .history-list {
     flex-wrap: nowrap;
@@ -666,6 +652,10 @@ header {
   
   .history-item {
     flex-shrink: 0;
+  }
+  
+  .history-icon {
+    font-size: 1.5rem;
   }
 }
 
